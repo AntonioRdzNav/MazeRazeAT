@@ -1,22 +1,25 @@
+#include <math.h>
+
 //////////////////////////////////////////////LEDs////////////////////////////////////////////////
-#define ledRight 24
-#define ledLeft 25
+#define ledRight 13
+#define ledLeft 12
 
 /////////////////////////////////////////////MOTORS///////////////////////////////////////////////
-#define motorL1 5 //Forward
-#define motorL2 4
-#define motorR1 2 //Forward
-#define motorR2 3
-double velGen = 65;
+#define motorL1 9 //Forward
+#define motorL2 6
+#define motorR1 11 //Forward
+#define motorR2 10
+double velGenDer = 65;
+double velGenIzq = 65;
 
 ///////////////////////////////////////////ULTRASONICS////////////////////////////////////////////
 #include <NewPing.h>
-#define echoRight 26
-#define trigRight 27
-#define echoLeft 28
-#define trigLeft 29
-#define echoFront 30
-#define trigFront 31  
+#define echoRight 4
+#define trigRight 5
+#define echoLeft 7
+#define trigLeft 8
+#define echoFront 2
+#define trigFront 3  
 bool special;
 double MAX_DISTANCE = 250;  //Prevents from waiting too long on pulseIn()
 NewPing pingFront(trigFront, echoFront, MAX_DISTANCE);
@@ -40,10 +43,10 @@ Vector normGyro;
 #include <utility/imumaths.h>
 #include <PID_v1.h>
 double leftAggKp=0, leftAggKi=0, leftAggKd=0;
-double leftConsKp=3, leftConsKi=0, leftConsKd=0;
+double leftConsKp=4, leftConsKi=0, leftConsKd=0;
 double leftError=0;
 double rightAggKp=0, rightAggKi=0, rightAggKd=0;
-double rightConsKp=3, rightConsKi=0, rightConsKd=0;
+double rightConsKp=4 rightConsKi=0, rightConsKd=0;
 double rightError=0;
 double Setpoint, leftOutput, rightOutput, Input;
 double outputDifference = 5;
@@ -146,20 +149,28 @@ void setup() {
 
 void loop(){
 //  Setpoint = calculateNewSetpoint(-90);
+//  readPosition(bno, event, mpu, 'B');
   
-//  forwardPID(bno, event, mpu);
-//  ledsPID();
+  forwardPID(bno, event, mpu);
+  ledsPID();
 //  filtrateDistances(ultraFront, ultraRight, ultraLeft);
 //  Serial.print(ultraFront.Xe);
+
+//  Serial.print(Input);
 //  Serial.print("   ");
-//  Serial.println(xBNOXe);
+//  Serial.print(leftOutput);
+//  Serial.print("   ");
+//  Serial.print(rightOutput);
+//  Serial.print("   ");
+//  Serial.println(slowGo());
+
 //  if(ultraFront.side){
-      Setpoint = calculateNewSetpoint(-90);
-      turnLeftPID(bno, event, mpu);
-      stop();
-      delay(5000);
+//      Setpoint = calculateNewSetpoint(-90);
+//      turnLeftPID(bno, event, mpu);
+//      stop();
+//      delay(5000);
 //  }
-  Serial.println(Setpoint);
+//  Serial.println(Setpoint);
 
 // Serial.print(leftOutput);
 // Serial.print("\t\t");

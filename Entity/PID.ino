@@ -17,8 +17,8 @@ void forwardPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu){
   Input = xBNOXe;
   leftPID.Compute();  //Gets an output
   rightPID.Compute();
-  analogWrite(motorR2, velGen + rightOutput);
-  analogWrite(motorL2, velGen + leftOutput);
+  analogWrite(motorR2, velGenDer + rightOutput);
+  analogWrite(motorL2, slowGo() + leftOutput);
   analogWrite(motorR1, 0);
   analogWrite(motorL1, 0);
 }   
