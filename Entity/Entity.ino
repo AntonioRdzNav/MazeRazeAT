@@ -42,16 +42,37 @@ Vector normGyro;
 ///////////////////////////////////////////PID///////////////////////////////////////////////////
 #include <utility/imumaths.h>
 #include <PID_v1.h>
-double leftAggKp=0, leftAggKi=0, leftAggKd=0;
+double leftAlignKp=4, leftAlignKi=0, leftAlignKd=0;
+double leftTurnKp=1.5, leftTurnKi=0, leftTurnKd=0;
 double leftConsKp=4, leftConsKi=0, leftConsKd=0;
+double leftGenKp=leftConsKp, leftGenKi=leftConsKi, leftGenKd=leftConsKd;
 double leftError=0;
-double rightAggKp=0, rightAggKi=0, rightAggKd=0;
-double rightConsKp=4 rightConsKi=0, rightConsKd=0;
+double rightAlignKp=4, rightAlignKi=0, rightAlignKd=0;
+double rightTurnKp=1.5, rightTurnKi=0, rightTurnKd=0;
+double rightConsKp=4, rightConsKi=0, rightConsKd=0;
+double rightGenKp=rightConsKp, rightGenKi=rightConsKi, rightGenKd=rightConsKd;
 double rightError=0;
-double Setpoint, leftOutput, rightOutput, Input;
+double Setpoint, leftOutput, rightOutput, Input, rawInput, fakeInput, lastAngle;
 double outputDifference = 5;
-PID leftPID(&Input, &leftOutput, &Setpoint, leftConsKp, leftConsKi, leftConsKd, DIRECT); // (Values>0)
-PID rightPID(&Input, &rightOutput, &Setpoint, rightConsKp, rightConsKi, rightConsKd, REVERSE); // (Values<0)
+PID leftPID(&fakeInput, &leftOutput, &Setpoint, leftGenKp, leftGenKi, leftGenKd, DIRECT); // (Values>0)
+PID rightPID(&fakeInput, &rightOutput, &Setpoint, rightGenKp, rightGenKi, rightGenKd, REVERSE); // (Values<0)
+
+///////////////////////////////////////////////COLOR///////////////////////////////////////////////////
+//#define BotonColores 38
+//#define LED_red 22
+//#define LED_blue 23
+//#define LED_green 24
+//#define S0 34
+//#define S1 35
+//#define S2 53
+//#define S3 52
+//#define sensorOut 51
+//double r = 0, g = 0, b = 0;
+//const int num_col = 8;
+//const int range = 7;
+//int color_position;           //  0        1       2       3         4          5          6        7   
+//String color_names[num_col] = {"blanco", "rosa", "rojo", "azul", "naranja", "amarillo", "negro", "verde"};
+//color color_position_arr[num_col];
 
 ///////////////////////////////////////////ULTRA KALMAN FILTER///////////////////////////////////////////
 struct UltraKalman{
@@ -149,12 +170,11 @@ void setup() {
 
 void loop(){
 //  Setpoint = calculateNewSetpoint(-90);
-//  readPosition(bno, event, mpu, 'B');
+  readPosition(bno, event, mpu, 'B');
   
-  forwardPID(bno, event, mpu);
-  ledsPID();
+//  forwardPID(bno, event, mpu);
+//  ledsPID();
 //  filtrateDistances(ultraFront, ultraRight, ultraLeft);
-//  Serial.print(ultraFront.Xe);
 
 //  Serial.print(Input);
 //  Serial.print("   ");
@@ -164,11 +184,13 @@ void loop(){
 //  Serial.print("   ");
 //  Serial.println(slowGo());
 
-//  if(ultraFront.side){
-//      Setpoint = calculateNewSetpoint(-90);
-//      turnLeftPID(bno, event, mpu);
-//      stop();
-//      delay(5000);
+//  if(ultraFront.side);
+      lastAngle = Setpoint;
+      Setpoint = calculateNewSetpoint(-90);
+//      Setpoint = 180;
+      spinPID(bno, event, mpu);
+      stop();
+      delay(1000);
 //  }
 //  Serial.println(Setpoint);
 

@@ -7,9 +7,13 @@ void readPosition(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu, ch
 
 void readBNO(Adafruit_BNO055 &bno, sensors_event_t &event){
   bno.getEvent(&event);
-  Input=event.orientation.x;
+  rawInput=event.orientation.x;
+  Input = rawInput;
   if(Input>180) 
     Input = Input - 360;
+  fakeInput = Input;
+  if(abs(Setpoint)==180 || (abs(Setpoint)==90 && abs(lastAngle)==180))
+    fakeInput = abs(Input);
 }
 
 //void printBNO(sensors_event_t event){
