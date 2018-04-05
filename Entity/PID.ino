@@ -11,6 +11,62 @@ int calculateNewSetpoint(int angle) {
   return newSetpoint;
 }
 
+void backPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu) {
+  leftPID.SetTunings(4, rightTurnKi, rightTurnKd);
+  rightPID.SetTunings(4, leftTurnKi, leftTurnKd);
+  double startTime = millis();
+  double endTime = 1100;
+  readPosition(bno, event, mpu, 'B');
+  while (endTime - startTime < 8000 || (rightOutput == 0 && leftOutput == 0)) {
+    xBNOKalmanFilter();
+    Input = xBNOXe;
+    leftPID.Compute();  //Gets an output
+    rightPID.Compute();
+    if(abs(Setpoint)==180){
+      if(Setpoint==180){
+        if (Input>0) {
+        analogWrite(motorL2, 0);
+        analogWrite(motorR1, velGenDer + leftOutput);
+        analogWrite(motorR2, 0);
+        analogWrite(motorL1, slowGo(endTime - startTime));//velGenIzq
+        }
+        else {
+          analogWrite(motorR2, 0);
+          analogWrite(motorL1, slowGo(endTime - startTime) + leftOutput);//velGenIzq
+          analogWrite(motorR1, velGenDer);
+          analogWrite(motorL2, 0);
+        }
+      }
+      else if(Setpoint==-180){
+        if (Input>0) {
+        analogWrite(motorL2, 0);
+        analogWrite(motorR1, velGenDer + rightOutput);
+        analogWrite(motorR2, 0);
+        analogWrite(motorL1, slowGo(endTime - startTime));//velGenIzq
+        }
+        else {
+          analogWrite(motorR2, 0);
+          analogWrite(motorL1, slowGo(endTime - startTime) + rightOutput);//velGenIzq
+          analogWrite(motorR1, velGenDer);
+          analogWrite(motorL2, 0);
+        }
+      }
+    }
+    else{
+    analogWrite(motorR2, 0);
+    analogWrite(motorL2, 0);
+    analogWrite(motorR1, velGenDer + leftOutput);
+    analogWrite(motorL1, slowGo(endTime - startTime) + rightOutput);//velGenIzq
+    }
+    ledsPID();
+    readPosition(bno, event, mpu, 'B');
+    endTime = millis()+1100;
+  } 
+  blinkingLEDS();
+  leftPID.SetTunings(rightConsKp, rightConsKi, rightConsKd);
+  rightPID.SetTunings(leftConsKp, leftConsKi, leftConsKd);
+}
+
 void forwardPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu) {
   readPosition(bno, event, mpu, 'B');
   xBNOKalmanFilter();
@@ -72,7 +128,7 @@ void spinPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu){
     leftPID.SetTunings(rightAlignKp, rightAlignKi, rightAlignKd);
     rightPID.SetTunings(leftAlignKp, leftAlignKi, leftAlignKd);
   }
-  turnPID(bno, event, mpu, 2500);//2500
+  turnPID(bno, event, mpu, 2000);//2500
   leftPID.SetTunings(rightConsKp, rightConsKi, rightConsKd);
   rightPID.SetTunings(leftConsKp, leftConsKi, leftConsKd);
 }
@@ -82,23 +138,21 @@ void turnPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu, double 
   double endTime = 0;
   readPosition(bno, event, mpu, 'B');
   while (endTime - startTime < time || (rightOutput == 0 && leftOutput == 0)) {
-      filtrateDistances(ultraFront, ultraRight, ultraLeft);
-//      Serial.print("XXX\t");
-//      Serial.println(ultraFront.Xe);
-    Serial.print(rawInput);
-    Serial.print("\t");
-    Serial.print(Input);
-    Serial.print("\t");
-    Serial.print(fakeInput);
-    Serial.print("\t");
+    filtrateDistances(ultraFront, ultraRight, ultraLeft);
+//    Serial.print(rawInput);
+//    Serial.print("\t");
+//    Serial.print(Input);
+//    Serial.print("\t");
+//    Serial.print(fakeInput);
+//    Serial.print("\t");
     bno.getEvent(&event);
     xBNOKalmanFilter();
     Input = xBNOXe;
     leftPID.Compute();  //Gets an output
     rightPID.Compute();
-    Serial.print(leftOutput);
-    Serial.print("\t");
-    Serial.println(rightOutput);
+//    Serial.print(leftOutput);
+//    Serial.print("\t");
+//    Serial.println(rightOutput);
     if(Setpoint==180){
       if (Input>0) {
       analogWrite(motorL2, leftOutput);
