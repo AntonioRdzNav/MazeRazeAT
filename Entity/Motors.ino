@@ -2,7 +2,12 @@ double slowGo(){
   return 65*(1-exp(-0.01*millis()/5));
 }
 
-void stop(){                                                                                          
+void stop(){    
+  analogWrite(motorR1, 40);
+  analogWrite(motorR2, 0);
+  analogWrite(motorL1, 40);
+  analogWrite(motorL2, 0); 
+  delay(100);                                                                                     
   analogWrite(motorR1, 0);
   analogWrite(motorR2, 0);
   analogWrite(motorL1, 0);
@@ -17,9 +22,9 @@ void go() {
 }
 
 void back() {
-  analogWrite(motorR1, 149);
+  analogWrite(motorR1, 45);
   analogWrite(motorR2, 0);
-  analogWrite(motorL1, 140);
+  analogWrite(motorL1, 45);
   analogWrite(motorL2, 0);
 }
 

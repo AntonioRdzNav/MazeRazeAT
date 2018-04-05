@@ -43,16 +43,16 @@ Vector normGyro;
 #include <utility/imumaths.h>
 #include <PID_v1.h>
 double leftAlignKp=4, leftAlignKi=0, leftAlignKd=0;
-double leftTurnKp=1.5, leftTurnKi=0, leftTurnKd=0;
+double leftTurnKp=1.6, leftTurnKi=0, leftTurnKd=0;
 double leftConsKp=4, leftConsKi=0, leftConsKd=0;
 double leftGenKp=leftConsKp, leftGenKi=leftConsKi, leftGenKd=leftConsKd;
 double leftError=0;
 double rightAlignKp=4, rightAlignKi=0, rightAlignKd=0;
-double rightTurnKp=1.5, rightTurnKi=0, rightTurnKd=0;
+double rightTurnKp=1.6, rightTurnKi=0, rightTurnKd=0;
 double rightConsKp=4, rightConsKi=0, rightConsKd=0;
 double rightGenKp=rightConsKp, rightGenKi=rightConsKi, rightGenKd=rightConsKd;
 double rightError=0;
-double Setpoint, leftOutput, rightOutput, Input, rawInput, fakeInput, lastAngle;
+double Setpoint, leftOutput, rightOutput, Input, rawInput, fakeInput, lastSetpoint;
 double outputDifference = 5;
 PID leftPID(&fakeInput, &leftOutput, &Setpoint, leftGenKp, leftGenKi, leftGenKd, DIRECT); // (Values>0)
 PID rightPID(&fakeInput, &rightOutput, &Setpoint, rightGenKp, rightGenKi, rightGenKd, REVERSE); // (Values<0)
@@ -77,7 +77,7 @@ PID rightPID(&fakeInput, &rightOutput, &Setpoint, rightGenKp, rightGenKi, rightG
 ///////////////////////////////////////////ULTRA KALMAN FILTER///////////////////////////////////////////
 struct UltraKalman{
   UltraKalman(){
-    varSensor = 0.1e-3; //Variance of sensor. The LESS, the MORE it looks like the raw input.
+    varSensor = 0.1e-4; //Variance of sensor. The LESS, the MORE it looks like the raw input.
     varProcess = 1e-7; 
     P = 1.0;
     Pc = 0.0;
@@ -166,33 +166,34 @@ void setup() {
   rightPID.SetSampleTime(1); // Set Sample Time
   rightPID.SetMode(AUTOMATIC);
   rightPID.SetOutputLimits(0, 255); 
+  delay(300);
 }
 
 void loop(){
 //  Setpoint = calculateNewSetpoint(-90);
-  readPosition(bno, event, mpu, 'B');
+//  readPosition(bno, event, mpu, 'B');
+//  Serial.println(rawInput);
   
-//  forwardPID(bno, event, mpu);
-//  ledsPID();
-//  filtrateDistances(ultraFront, ultraRight, ultraLeft);
-
-//  Serial.print(Input);
-//  Serial.print("   ");
-//  Serial.print(leftOutput);
-//  Serial.print("   ");
-//  Serial.print(rightOutput);
-//  Serial.print("   ");
-//  Serial.println(slowGo());
-
-//  if(ultraFront.side);
-      lastAngle = Setpoint;
-      Setpoint = calculateNewSetpoint(-90);
-//      Setpoint = 180;
-      spinPID(bno, event, mpu);
+  forwardPID(bno, event, mpu);
+  ledsPID();
+  filtrateDistances(ultraFront, ultraRight, ultraLeft);
+//  Serial.print("FRONT\t");
+//  Serial.println(ultraFront.Xe);
+//  Serial.print(fakeInput);
+//  Serial.print("\t");
+//  Serial.println(Setpoint);
+  if(ultraFront.side){
       stop();
       delay(1000);
-//  }
-//  Serial.println(Setpoint);
+      lastSetpoint = Setpoint;
+      Setpoint = calculateNewSetpoint(90);
+      spinPID(bno, event, mpu);
+      stop();
+      filtrateDistances(ultraFront, ultraRight, ultraLeft);
+//      Serial.print("\t");
+//      Serial.println(ultraFront.Xe);
+      delay(500);
+  }
 
 // Serial.print(leftOutput);
 // Serial.print("\t\t");
@@ -202,7 +203,9 @@ void loop(){
 // turnLeftPID(bno, event, mpu);
 // delay(2000);
 // ledsPID();
-  
+
+//  xBNO_RawKalman(bno, event);
+
 //  ultraFront_RawKalman(ultraFront);
 //  ultraLeft_RawKalman(ultraLeft);
 //  ultraRight_RawKalman(ultraRight);
