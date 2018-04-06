@@ -1,3 +1,4 @@
+#include <StackArray.h>
 #include <math.h>
 
 //////////////////////////////////////////////LEDs////////////////////////////////////////////////
@@ -56,6 +57,12 @@ double Setpoint, leftOutput, rightOutput, Input, rawInput, fakeInput, lastSetpoi
 double outputDifference = 5;
 PID leftPID(&fakeInput, &leftOutput, &Setpoint, leftGenKp, leftGenKi, leftGenKd, DIRECT); // (Values>0)
 PID rightPID(&fakeInput, &rightOutput, &Setpoint, rightGenKp, rightGenKi, rightGenKd, REVERSE); // (Values<0)
+
+//////////////////////////////////////////////ALGORITHM/////////////////////////////////////////////////
+const int mazeSize=9;
+int actualRow=8, actualCol=6;
+char comeFrom='S';
+String maze[mazeSize][mazeSize];
 
 ///////////////////////////////////////////////COLOR///////////////////////////////////////////////////
 //#define BotonColores 38
@@ -170,34 +177,31 @@ void setup() {
 }
 
 void loop(){
-//  Setpoint = calculateNewSetpoint(-90);
- // readPosition(bno, event, mpu, 'B');
-//  Serial.println(rawInput);
-  
-   forwardPID(bno, event, mpu);
-   ledsPID();
-   filtrateDistances(ultraFront, ultraRight, ultraLeft);
-   if(ultraFront.side){
-       stop();
-       delay(500);
-       lastSetpoint = Setpoint;
-       Setpoint = calculateNewSetpoint(90);
-       spinPID(bno, event, mpu);
-       // backPID(bno, event, mpu);
-       // stop();
-       // delay(500);      
-       filtrateDistances(ultraFront, ultraRight, ultraLeft);      
-       delay(900);
-   }
+//   forwardPID(bno, event, mpu);
+//   ledsPID();
+//   filtrateDistances(ultraFront, ultraRight, ultraLeft);
+//   if(ultraFront.side){
+//       stop();
+//       delay(500);
+//       lastSetpoint = Setpoint;
+//       Setpoint = calculateNewSetpoint(90);
+//       spinPID(bno, event, mpu);
+//       // backPID(bno, event, mpu);
+//       // stop();
+//       // delay(500);      
+//       filtrateDistances(ultraFront, ultraRight, ultraLeft);      
+//       delay(900);
+//   }
 
-//  readPosition(bno, event, mpu, 'B');
-//  backPID(bno, event, mpu); 
-//  ledsPID();
-//  stop();
-//  delay(500);
+//  rightPriotity(ultraRight, ultraLeft, ultraFront);
+  filtrateDistances(ultraFront, ultraRight, ultraLeft);
+  Serial.print(ultraLeft.distance);
+  Serial.print("\t");
+  Serial.print(ultraFront.distance);
+  Serial.print("\t");
+  Serial.println(ultraRight.distance);
 
 //  xBNO_RawKalman(bno, event);
-
 //  ultraFront_RawKalman(ultraFront);
 //  ultraLeft_RawKalman(ultraLeft);
 //  ultraRight_RawKalman(ultraRight);

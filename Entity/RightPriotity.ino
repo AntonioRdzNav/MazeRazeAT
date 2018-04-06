@@ -6,11 +6,11 @@ void rightPriotity(UltraKalman &ultraRight, UltraKalman &ultraLeft, UltraKalman 
    Setpoint = calculateNewSetpoint(90);
    spinPID(bno, event, mpu);
   }
-  else if (!frente){
+  else if (!ultraFront.side){
     forwardPID(bno, event, mpu);
     ledsPID();
   }
-  else if(!izquierda){
+  else if(!ultraLeft.side){
    lastSetpoint = Setpoint;
    Setpoint = calculateNewSetpoint(-90);
    spinPID(bno, event, mpu);
