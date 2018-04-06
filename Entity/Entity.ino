@@ -1,3 +1,4 @@
+#include <StackArray.h>
 #include <math.h>
 
 //////////////////////////////////////////////LEDs////////////////////////////////////////////////
@@ -42,21 +43,48 @@ Vector normGyro;
 ///////////////////////////////////////////PID///////////////////////////////////////////////////
 #include <utility/imumaths.h>
 #include <PID_v1.h>
-double leftAggKp=0, leftAggKi=0, leftAggKd=0;
-double leftConsKp=4, leftConsKi=0, leftConsKd=0;
+double leftAlignKp=4, leftAlignKi=0, leftAlignKd=0;
+double leftTurnKp=1.6, leftTurnKi=0, leftTurnKd=0;
+double leftConsKp=4.1, leftConsKi=0, leftConsKd=0;
+double leftGenKp=leftConsKp, leftGenKi=leftConsKi, leftGenKd=leftConsKd;
 double leftError=0;
-double rightAggKp=0, rightAggKi=0, rightAggKd=0;
-double rightConsKp=4 rightConsKi=0, rightConsKd=0;
+double rightAlignKp=4, rightAlignKi=0, rightAlignKd=0;
+double rightTurnKp=1.6, rightTurnKi=0, rightTurnKd=0;
+double rightConsKp=4.1, rightConsKi=0, rightConsKd=0;
+double rightGenKp=rightConsKp, rightGenKi=rightConsKi, rightGenKd=rightConsKd;
 double rightError=0;
-double Setpoint, leftOutput, rightOutput, Input;
+double Setpoint, leftOutput, rightOutput, Input, rawInput, fakeInput, lastSetpoint;
 double outputDifference = 5;
-PID leftPID(&Input, &leftOutput, &Setpoint, leftConsKp, leftConsKi, leftConsKd, DIRECT); // (Values>0)
-PID rightPID(&Input, &rightOutput, &Setpoint, rightConsKp, rightConsKi, rightConsKd, REVERSE); // (Values<0)
+PID leftPID(&fakeInput, &leftOutput, &Setpoint, leftGenKp, leftGenKi, leftGenKd, DIRECT); // (Values>0)
+PID rightPID(&fakeInput, &rightOutput, &Setpoint, rightGenKp, rightGenKi, rightGenKd, REVERSE); // (Values<0)
+
+//////////////////////////////////////////////ALGORITHM/////////////////////////////////////////////////
+const int mazeSize=9;
+int actualRow=8, actualCol=6;
+char comeFrom='S';
+String maze[mazeSize][mazeSize];
+
+///////////////////////////////////////////////COLOR///////////////////////////////////////////////////
+//#define BotonColores 38
+//#define LED_red 22
+//#define LED_blue 23
+//#define LED_green 24
+//#define S0 34
+//#define S1 35
+//#define S2 53
+//#define S3 52
+//#define sensorOut 51
+//double r = 0, g = 0, b = 0;
+//const int num_col = 8;
+//const int range = 7;
+//int color_position;           //  0        1       2       3         4          5          6        7   
+//String color_names[num_col] = {"blanco", "rosa", "rojo", "azul", "naranja", "amarillo", "negro", "verde"};
+//color color_position_arr[num_col];
 
 ///////////////////////////////////////////ULTRA KALMAN FILTER///////////////////////////////////////////
 struct UltraKalman{
   UltraKalman(){
-    varSensor = 0.1e-3; //Variance of sensor. The LESS, the MORE it looks like the raw input.
+    varSensor = 0.1e-4; //Variance of sensor. The LESS, the MORE it looks like the raw input.
     varProcess = 1e-7; 
     P = 1.0;
     Pc = 0.0;
@@ -145,42 +173,35 @@ void setup() {
   rightPID.SetSampleTime(1); // Set Sample Time
   rightPID.SetMode(AUTOMATIC);
   rightPID.SetOutputLimits(0, 255); 
+  delay(300);
 }
 
 void loop(){
-//  Setpoint = calculateNewSetpoint(-90);
-//  readPosition(bno, event, mpu, 'B');
-  
-  forwardPID(bno, event, mpu);
-  ledsPID();
-//  filtrateDistances(ultraFront, ultraRight, ultraLeft);
-//  Serial.print(ultraFront.Xe);
+//   forwardPID(bno, event, mpu);
+//   ledsPID();
+//   filtrateDistances(ultraFront, ultraRight, ultraLeft);
+//   if(ultraFront.side){
+//       stop();
+//       delay(500);
+//       lastSetpoint = Setpoint;
+//       Setpoint = calculateNewSetpoint(90);
+//       spinPID(bno, event, mpu);
+//       // backPID(bno, event, mpu);
+//       // stop();
+//       // delay(500);      
+//       filtrateDistances(ultraFront, ultraRight, ultraLeft);      
+//       delay(900);
+//   }
 
-//  Serial.print(Input);
-//  Serial.print("   ");
-//  Serial.print(leftOutput);
-//  Serial.print("   ");
-//  Serial.print(rightOutput);
-//  Serial.print("   ");
-//  Serial.println(slowGo());
+//  rightPriotity(ultraRight, ultraLeft, ultraFront);
+  filtrateDistances(ultraFront, ultraRight, ultraLeft);
+  Serial.print(ultraLeft.distance);
+  Serial.print("\t");
+  Serial.print(ultraFront.distance);
+  Serial.print("\t");
+  Serial.println(ultraRight.distance);
 
-//  if(ultraFront.side){
-//      Setpoint = calculateNewSetpoint(-90);
-//      turnLeftPID(bno, event, mpu);
-//      stop();
-//      delay(5000);
-//  }
-//  Serial.println(Setpoint);
-
-// Serial.print(leftOutput);
-// Serial.print("\t\t");
-// Serial.print(rightOutput);
-// Serial.print("\t\t");
-// Serial.println(outputDifference);
-// turnLeftPID(bno, event, mpu);
-// delay(2000);
-// ledsPID();
-  
+//  xBNO_RawKalman(bno, event);
 //  ultraFront_RawKalman(ultraFront);
 //  ultraLeft_RawKalman(ultraLeft);
 //  ultraRight_RawKalman(ultraRight);
