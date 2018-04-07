@@ -9,7 +9,7 @@ void ledsPID(){
 }
 
 void blinkingLEDS(){
-  for(int i=0; i<10; i++){
+  for(int i=0; i<4; i++){
     digitalWrite(ledLeft, HIGH); digitalWrite(ledRight, HIGH); 
     delay(60);
     digitalWrite(ledLeft, LOW); digitalWrite(ledRight, LOW);

@@ -10,8 +10,10 @@
 #define motorL2 6
 #define motorR1 11 //Forward
 #define motorR2 10
-double velGenDer = 65;
-double velGenIzq = 65;
+double velGenDer = 85;
+double velGenIzq = 85;
+double velGenDerBack = 50;
+double velGenIzqBack = 50;
 
 ///////////////////////////////////////////ULTRASONICS////////////////////////////////////////////
 #include <NewPing.h>
@@ -44,13 +46,13 @@ Vector normGyro;
 #include <utility/imumaths.h>
 #include <PID_v1.h>
 double leftAlignKp=4, leftAlignKi=0, leftAlignKd=0;
-double leftTurnKp=1.6, leftTurnKi=0, leftTurnKd=0;
-double leftConsKp=4.1, leftConsKi=0, leftConsKd=0;
+double leftTurnKp=1.9, leftTurnKi=0, leftTurnKd=0;
+double leftConsKp=5.9, leftConsKi=0, leftConsKd=0;
 double leftGenKp=leftConsKp, leftGenKi=leftConsKi, leftGenKd=leftConsKd;
 double leftError=0;
 double rightAlignKp=4, rightAlignKi=0, rightAlignKd=0;
-double rightTurnKp=1.6, rightTurnKi=0, rightTurnKd=0;
-double rightConsKp=4.1, rightConsKi=0, rightConsKd=0;
+double rightTurnKp=1.9, rightTurnKi=0, rightTurnKd=0;
+double rightConsKp=5.2, rightConsKi=0, rightConsKd=0;
 double rightGenKp=rightConsKp, rightGenKi=rightConsKi, rightGenKd=rightConsKd;
 double rightError=0;
 double Setpoint, leftOutput, rightOutput, Input, rawInput, fakeInput, lastSetpoint;
@@ -173,33 +175,30 @@ void setup() {
   rightPID.SetSampleTime(1); // Set Sample Time
   rightPID.SetMode(AUTOMATIC);
   rightPID.SetOutputLimits(0, 255); 
-  delay(300);
+  delay(500);
 }
 
 void loop(){
-//   forwardPID(bno, event, mpu);
-//   ledsPID();
-//   filtrateDistances(ultraFront, ultraRight, ultraLeft);
-//   if(ultraFront.side){
-//       stop();
-//       delay(500);
-//       lastSetpoint = Setpoint;
-//       Setpoint = calculateNewSetpoint(90);
-//       spinPID(bno, event, mpu);
-//       // backPID(bno, event, mpu);
-//       // stop();
-//       // delay(500);      
-//       filtrateDistances(ultraFront, ultraRight, ultraLeft);      
-//       delay(900);
-//   }
+   forwardPID(bno, event, mpu);
+   ledsPID();
+   filtrateDistances(ultraFront, ultraRight, ultraLeft);
+   if(ultraFront.side){
+       stop(true);
+       spinPID(bno, event, mpu, 90);
+       backPID(bno, event, mpu);
+       stop(false);   
+       filtrateDistances(ultraFront, ultraRight, ultraLeft);      
+//       delay(200);
+   }
 
 //  rightPriotity(ultraRight, ultraLeft, ultraFront);
-  filtrateDistances(ultraFront, ultraRight, ultraLeft);
-  Serial.print(ultraLeft.distance);
-  Serial.print("\t");
-  Serial.print(ultraFront.distance);
-  Serial.print("\t");
-  Serial.println(ultraRight.distance);
+
+//  filtrateDistances(ultraFront, ultraRight, ultraLeft);
+//  Serial.print(ultraLeft.distance);
+//  Serial.print("\t");
+//  Serial.print(ultraFront.distance);
+//  Serial.print("\t");
+//  Serial.println(ultraRight.distance);
 
 //  xBNO_RawKalman(bno, event);
 //  ultraFront_RawKalman(ultraFront);

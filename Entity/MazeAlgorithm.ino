@@ -89,22 +89,98 @@ void addInverseStack(StackArray<char> generalStack, StackArray<char> &inverseSta
 
 void move(char direction){
     maze[actualRow][actualCol][4] = '1';
+    double startTime = millis();
+    double endTime = 0;
     if(direction=='W'){   //Will move West
         actualCol--;
+        if(comeFrom=='S')
+          spinPID(bno, event, mpu, -90);
+        else if(comeFrom=='E'){
+          while(endTime - startTime < 1000){
+            forwardPID(bno, event, mpu);
+            filtrateDistances(ultraFront, ultraRight, ultraLeft);
+            endTime=millis();
+          }       
+          stop(true);
+        }
+        else if(comeFrom=='N')
+          spinPID(bno, event, mpu, 90);
         comeFrom = 'E';
     }
     else if(direction=='N'){   //Will move North
         actualRow--;
+        if(comeFrom=='W')
+          spinPID(bno, event, mpu, -90);
+        else if(comeFrom=='S'){
+          while(endTime - startTime < 1000){
+            forwardPID(bno, event, mpu);
+            filtrateDistances(ultraFront, ultraRight, ultraLeft);
+            endTime=millis();
+          } 
+          stop(true);
+        }
+        else if(comeFrom=='E')
+          spinPID(bno, event, mpu, 90);
         comeFrom = 'S';
     }
     else if(direction=='E'){   //Will move East
         actualCol++;
+        if(comeFrom=='N')
+          spinPID(bno, event, mpu, -90);
+        else if(comeFrom=='W'){
+          while(endTime - startTime < 1000){
+            forwardPID(bno, event, mpu);
+            filtrateDistances(ultraFront, ultraRight, ultraLeft);
+            endTime=millis();
+          } 
+          stop(true);
+        }
+        else if(comeFrom=='S')
+          spinPID(bno, event, mpu, 90);       
         comeFrom = 'W';
     }
     else if(direction=='S'){   //Will move South
         actualRow++;
+        if(comeFrom=='E')
+          spinPID(bno, event, mpu, -90);
+        else if(comeFrom=='N'){
+          while(endTime - startTime < 1000){
+            forwardPID(bno, event, mpu);
+            filtrateDistances(ultraFront, ultraRight, ultraLeft);
+            endTime=millis();
+          } 
+          stop(true);
+        }
+        else if(comeFrom=='W')
+          spinPID(bno, event, mpu, 90);     
         comeFrom = 'N';
     }
+}
+
+String checkSides(String bits, int bit1, int bit2, int bit3){
+  if(ultraLeft.side)
+    bits[bit1]=1;
+  if(ultraFront.side)
+    bits[bit2]=1;
+  if(ultraRight.side)
+    bits[bit3]=1;
+  return bits;
+}
+String getBitWithValues(String bits){
+  switch(comeFrom){
+    case 'W':
+        return checkSides(bits, 1, 2, 3); //bits of N, E, S
+      break;
+    case 'N':
+        return checkSides(bits, 2, 3, 0); //bits of E, N, S
+      break;
+    case 'E':
+        return checkSides(bits, 3, 0, 1); //bits of S, O, N
+      break;
+    case 'S':
+        return checkSides(bits, 0, 1, 2); //bits of W, N, E
+      break;                  
+  }
 }
 
 bool robotMovement(StackArray<char> &generalStack, StackArray<char> &fatherStack, StackArray<char> &inverseStack, String bits){
@@ -148,13 +224,14 @@ bool robotMovement(StackArray<char> &generalStack, StackArray<char> &fatherStack
 void mazeAlgorithm(){
     char casilla;
     bool done=false;
-    String bits;
+    String bits="000000";
     StackArray <char> fatherStack;
     StackArray <char> generalStack;
     StackArray <char> inverseStack;
     initMaze();
     do{
-        //Read Sensors
+        filtrateDistances(ultraFront, ultraRight, ultraLeft);
+        bits = getBitWithValues(bits);
         done = robotMovement(generalStack, fatherStack, inverseStack, bits);
     }while(!done);
 }
