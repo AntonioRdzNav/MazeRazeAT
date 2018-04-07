@@ -179,19 +179,20 @@ void setup() {
 }
 
 void loop(){
-   forwardPID(bno, event, mpu);
-   ledsPID();
-   filtrateDistances(ultraFront, ultraRight, ultraLeft);
-   if(ultraFront.side){
-       stop(true);
-       spinPID(bno, event, mpu, 90);
-       backPID(bno, event, mpu);
-       stop(false);   
-       filtrateDistances(ultraFront, ultraRight, ultraLeft);      
-//       delay(200);
-   }
+//   forwardPID(bno, event, mpu);
+//   ledsPID();
+//   filtrateDistances(ultraFront, ultraRight, ultraLeft);
+//   if(ultraFront.side){
+//       stop(true);
+//       spinPID(bno, event, mpu, 90);
+//       backPID(bno, event, mpu);
+//       stop(false);   
+//       filtrateDistances(ultraFront, ultraRight, ultraLeft);      
+////       delay(200);
+//   }
 
-//  rightPriotity(ultraRight, ultraLeft, ultraFront);
+//  initUltrasonic();
+  rightPriotity(ultraRight, ultraLeft, ultraFront);
 
 //  filtrateDistances(ultraFront, ultraRight, ultraLeft);
 //  Serial.print(ultraLeft.distance);
@@ -203,5 +204,5 @@ void loop(){
 //  xBNO_RawKalman(bno, event);
 //  ultraFront_RawKalman(ultraFront);
 //  ultraLeft_RawKalman(ultraLeft);
-//  ultraRight_RawKalman(ultraRight);
+  ultraRight_RawKalman(ultraRight);
 }

@@ -1,3 +1,10 @@
+void initUltrasonic(){
+  for(int i=0; i<100; i++){
+    filtrateDistances(ultraFront, ultraRight, ultraLeft);
+    Serial.println(ultraFront.distance);
+  }
+}
+
 void rawRightUltrasonic(UltraKalman &ultraRight){
   ultraRight.distance = pingRight.ping_cm();
 }

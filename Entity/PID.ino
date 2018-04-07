@@ -62,7 +62,6 @@ void backPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu) {
     readPosition(bno, event, mpu, 'B');
     endTime = millis();
   } 
-  blinkingLEDS();
   leftPID.SetTunings(rightConsKp, rightConsKi, rightConsKd);
   rightPID.SetTunings(leftConsKp, leftConsKi, leftConsKd);
 }
@@ -141,6 +140,11 @@ void turnPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu, double 
   readPosition(bno, event, mpu, 'B');
   while (endTime - startTime < time || (rightOutput == 0 && leftOutput == 0)) {
     filtrateDistances(ultraFront, ultraRight, ultraLeft);
+//    Serial.print(ultraLeft.distacia);
+//    Serial.print("\t");
+//    Serial.print(ultraFront.distacia);
+//    Serial.print("\t");
+//    Serial.println(ultraRight.distacia);
 //    Serial.print(rawInput);
 //    Serial.print("\t");
 //    Serial.print(Input);

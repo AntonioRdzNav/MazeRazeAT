@@ -8,7 +8,7 @@ void stop(bool forward){
     analogWrite(motorR2, 0);
     analogWrite(motorL1, 235);
     analogWrite(motorL2, 0); 
-    delay(140);   
+    delay(120);//140
   }                                                                                  
   analogWrite(motorR1, 0);
   analogWrite(motorR2, 0);
