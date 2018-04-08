@@ -9,22 +9,8 @@ void ultraKalmanFilter(UltraKalman &ultra){
 	ultra.Zp = ultra.Xp;
 	ultra.Xe = ultra.G*(ultra.distance-ultra.Zp)+ultra.Xp;	//Estimates new filtered input
 }
-void ultraRight_RawKalman(UltraKalman &ultra){
-  rawRightUltrasonic(ultra);
-  Serial.print(ultra.distance);
-  Serial.print(",");
-  ultraKalmanFilter(ultra);
-  Serial.println(ultra.Xe);
-}
-void ultraLeft_RawKalman(UltraKalman &ultra){
-  rawLeftUltrasonic(ultra);
-  Serial.print(ultra.distance);
-  Serial.print(",");
-  ultraKalmanFilter(ultra);
-  Serial.println(ultra.Xe);
-}
-void ultraFront_RawKalman(UltraKalman &ultra){
-  rawFrontUltrasonic(ultra);
+void ultra_RawKalman(UltraKalman &ultra, NewPing ping){
+  rawUltrasonic(ultra, ping);
   Serial.print(ultra.distance);
   Serial.print(",");
   ultraKalmanFilter(ultra);
@@ -35,7 +21,7 @@ void filtrateDistances(UltraKalman &ultraFront, UltraKalman &ultraRight, UltraKa
   ultraKalmanFilter(ultraFront);
   ultraKalmanFilter(ultraRight);
   ultraKalmanFilter(ultraLeft);
-  if(ultraFront.Xe <= 18 && ultraFront.Xe != 0) ultraFront.side = true;
+  if(ultraFront.Xe <= 15 && ultraFront.Xe != 0) ultraFront.side = true;
   else ultraFront.side = false;
   if(ultraRight.Xe <= 25 && ultraRight.Xe != 0) ultraRight.side = true;
   else ultraRight.side = false;

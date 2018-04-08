@@ -140,11 +140,11 @@ void turnPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu, double 
   readPosition(bno, event, mpu, 'B');
   while (endTime - startTime < time || (rightOutput == 0 && leftOutput == 0)) {
     filtrateDistances(ultraFront, ultraRight, ultraLeft);
-//    Serial.print(ultraLeft.distacia);
+//    Serial.print(ultraLeft.distance);
 //    Serial.print("\t");
-//    Serial.print(ultraFront.distacia);
+//    Serial.print(ultraFront.distance);
 //    Serial.print("\t");
-//    Serial.println(ultraRight.distacia);
+//    Serial.println(ultraRight.distance);
 //    Serial.print(rawInput);
 //    Serial.print("\t");
 //    Serial.print(Input);

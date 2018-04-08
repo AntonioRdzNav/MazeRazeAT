@@ -3,13 +3,13 @@ double slowGo(double time){
 }
 
 void stop(bool forward){    
-  if(forward){
-    analogWrite(motorR1, 235);
-    analogWrite(motorR2, 0);
-    analogWrite(motorL1, 235);
-    analogWrite(motorL2, 0); 
-    delay(120);//140
-  }                                                                                  
+//  if(forward){
+//    analogWrite(motorR1, 235);
+//    analogWrite(motorR2, 0);
+//    analogWrite(motorL1, 235);
+//    analogWrite(motorL2, 0); 
+//    delay(100);//140
+//  }                                                                                  
   analogWrite(motorR1, 0);
   analogWrite(motorR2, 0);
   analogWrite(motorL1, 0);

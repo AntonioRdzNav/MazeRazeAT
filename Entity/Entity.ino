@@ -12,8 +12,8 @@
 #define motorR2 10
 double velGenDer = 85;
 double velGenIzq = 85;
-double velGenDerBack = 50;
-double velGenIzqBack = 50;
+double velGenDerBack = 55;
+double velGenIzqBack = 55;
 
 ///////////////////////////////////////////ULTRASONICS////////////////////////////////////////////
 #include <NewPing.h>
@@ -21,8 +21,8 @@ double velGenIzqBack = 50;
 #define trigRight 5
 #define echoLeft 7
 #define trigLeft 8
-#define echoFront 2
-#define trigFront 3  
+#define echoFront 3
+#define trigFront 2  
 bool special;
 double MAX_DISTANCE = 250;  //Prevents from waiting too long on pulseIn()
 NewPing pingFront(trigFront, echoFront, MAX_DISTANCE);
@@ -86,7 +86,7 @@ String maze[mazeSize][mazeSize];
 ///////////////////////////////////////////ULTRA KALMAN FILTER///////////////////////////////////////////
 struct UltraKalman{
   UltraKalman(){
-    varSensor = 0.1e-4; //Variance of sensor. The LESS, the MORE it looks like the raw input.
+    varSensor = 3e-6; //Variance of sensor. The LESS, the MORE it looks like the raw input.
     varProcess = 1e-7; 
     P = 1.0;
     Pc = 0.0;
@@ -191,8 +191,13 @@ void loop(){
 ////       delay(200);
 //   }
 
-//  initUltrasonic();
-  rightPriotity(ultraRight, ultraLeft, ultraFront);
+  rightPriotity(ultraFront, ultraRight, ultraLeft);
+
+//  readPosition(bno, event, mpu, 'B');
+//  filtrateDistances(ultraFront, ultraRight, ultraLeft);
+//  oneStep(ultraFront, ultraRight, ultraLeft, 35);
+//  spinPID(bno, event, mpu, 90);
+
 
 //  filtrateDistances(ultraFront, ultraRight, ultraLeft);
 //  Serial.print(ultraLeft.distance);
@@ -202,7 +207,7 @@ void loop(){
 //  Serial.println(ultraRight.distance);
 
 //  xBNO_RawKalman(bno, event);
-//  ultraFront_RawKalman(ultraFront);
-//  ultraLeft_RawKalman(ultraLeft);
-  ultraRight_RawKalman(ultraRight);
+//  ultra_RawKalman(ultraFront, pingFront);
+//  ultra_RawKalman(ultraLeft, pingLeft);
+//  ultra_RawKalman(ultraRight, pingRight);
 }
