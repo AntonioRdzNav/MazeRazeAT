@@ -10,8 +10,8 @@
 #define motorL2 6
 #define motorR1 11 //Forward
 #define motorR2 10
-double velGenDer = 85;
-double velGenIzq = 85;
+double velGenDer = 100;
+double velGenIzq = 100;
 double velGenDerBack = 55;
 double velGenIzqBack = 55;
 
@@ -55,10 +55,10 @@ double rightTurnKp=1.9, rightTurnKi=0, rightTurnKd=0;
 double rightConsKp=5.2, rightConsKi=0, rightConsKd=0;
 double rightGenKp=rightConsKp, rightGenKi=rightConsKi, rightGenKd=rightConsKd;
 double rightError=0;
-double Setpoint, leftOutput, rightOutput, Input, rawInput, fakeInput, lastSetpoint;
+double Offset, Setpoint, fakeSetpoint, leftOutput, rightOutput, Input, rawInput, fakeInput, lastSetpoint;
 double outputDifference = 5;
-PID leftPID(&fakeInput, &leftOutput, &Setpoint, leftGenKp, leftGenKi, leftGenKd, DIRECT); // (Values>0)
-PID rightPID(&fakeInput, &rightOutput, &Setpoint, rightGenKp, rightGenKi, rightGenKd, REVERSE); // (Values<0)
+PID leftPID(&fakeInput, &leftOutput, &fakeSetpoint, leftGenKp, leftGenKi, leftGenKd, DIRECT); // (Values>0)
+PID rightPID(&fakeInput, &rightOutput, &fakeSetpoint, rightGenKp, rightGenKi, rightGenKd, REVERSE); // (Values<0)
 
 //////////////////////////////////////////////ALGORITHM/////////////////////////////////////////////////
 const int mazeSize=9;
@@ -179,19 +179,18 @@ void setup() {
 }
 
 void loop(){
-//   forwardPID(bno, event, mpu);
-//   ledsPID();
-//   filtrateDistances(ultraFront, ultraRight, ultraLeft);
-//   if(ultraFront.side){
-//       stop(true);
-//       spinPID(bno, event, mpu, 90);
-//       backPID(bno, event, mpu);
-//       stop(false);   
-//       filtrateDistances(ultraFront, ultraRight, ultraLeft);      
-////       delay(200);
-//   }
+   forwardPID(bno, event, mpu);
+   filtrateDistances(ultraFront, ultraRight, ultraLeft);
+   if(ultraFront.side){
+       stop(true);
+       spinPID(bno, event, mpu, 90);
+       backPID(bno, event, mpu);
+       stop(false);   
+       setFakeSetpoint();
+       filtrateDistances(ultraFront, ultraRight, ultraLeft);      
+   }
 
-  rightPriotity(ultraFront, ultraRight, ultraLeft);
+//  rightPriotity(ultraFront, ultraRight, ultraLeft);
 
 //  readPosition(bno, event, mpu, 'B');
 //  filtrateDistances(ultraFront, ultraRight, ultraLeft);

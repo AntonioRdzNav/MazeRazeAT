@@ -1,18 +1,18 @@
 void oneStep(UltraKalman ultraFront, UltraKalman &ultraRight, UltraKalman &ultraLeft, double distanceCM){
     double startDistance = ultraFront.distance;
-    Serial.print(startDistance);
-    Serial.print("\t");
+//    Serial.print(startDistance);
+//    Serial.print("\t");
     if(startDistance-distanceCM < 5)
       while(!ultraFront.side){
-        Serial.println(ultraFront.distance);
+//        Serial.println(ultraFront.distance);
         forwardPID(bno, event, mpu);
         filtrateDistances(ultraFront, ultraRight, ultraLeft);
       }  
     else    
       while(ultraFront.distance>startDistance-distanceCM){
-        Serial.print(startDistance-distanceCM);
-        Serial.print("\t\t\t");
-        Serial.println(ultraFront.distance);
+//        Serial.print(startDistance-distanceCM);
+//        Serial.print("\t\t\t");
+//        Serial.println(ultraFront.distance);
         forwardPID(bno, event, mpu);
         filtrateDistances(ultraFront, ultraRight, ultraLeft);
       } 
@@ -27,6 +27,8 @@ void rightPriotity(UltraKalman &ultraFront, UltraKalman &ultraRight, UltraKalman
       spinPID(bno, event, mpu, 90);
       backPID(bno, event, mpu);
       stop(false);
+      setFakeSetpoint();
+      Serial.println(Setpoint);      
       oneStep(ultraFront, ultraRight, ultraLeft, 34);
    }
    else{
@@ -40,8 +42,10 @@ void rightPriotity(UltraKalman &ultraFront, UltraKalman &ultraRight, UltraKalman
   else if(!ultraLeft.side){
     if(ultraRight.side){
        spinPID(bno, event, mpu, -90);
-       backPID(bno, event, mpu);
+       backPID(bno, event, mpu);      
        stop(false);
+       setFakeSetpoint();
+       Serial.println(Setpoint);       
        oneStep(ultraFront, ultraRight, ultraLeft, 34);
     }
     else{
@@ -54,5 +58,7 @@ void rightPriotity(UltraKalman &ultraFront, UltraKalman &ultraRight, UltraKalman
    spinPID(bno, event, mpu, 90);
    backPID(bno, event, mpu);
    stop(false);
+   setFakeSetpoint();
+   Serial.println(Setpoint);
   }  
 }

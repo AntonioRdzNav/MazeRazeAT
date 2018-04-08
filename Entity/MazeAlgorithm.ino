@@ -65,43 +65,36 @@ void addGeneralStack(StackArray<char> &generalStack){
    }
 }
 
-char inverseDirection(char direction){
-    if(direction == 'W')   //Will move West
-        return 'E';
-    else if(direction == 'N')   //Will move North
-        return 'S';
-    else if(direction == 'E')   //Will move East
-        return 'W';
-    else if(direction == 'S')   //Will move South
-        return 'N';
-}
-void addInverseStack(StackArray<char> generalStack, StackArray<char> &inverseStack){
-    StackArray <char>auxStack;
-    while(generalStack.peek()!='#'){
-        auxStack.push(generalStack.peek());
-        generalStack.pop();
-    }
-    while(!auxStack.isEmpty()){
-        inverseStack.push(inverseDirection(auxStack.peek()));
-        auxStack.pop();
-    }
-}
+//char inverseDirection(char direction){
+//    if(direction == 'W')   //Will move West
+//        return 'E';
+//    else if(direction == 'N')   //Will move North
+//        return 'S';
+//    else if(direction == 'E')   //Will move East
+//        return 'W';
+//    else if(direction == 'S')   //Will move South
+//        return 'N';
+//}
+//void addInverseStack(StackArray<char> generalStack, StackArray<char> &inverseStack){
+//    StackArray <char>auxStack;
+//    while(generalStack.peek()!='#'){
+//        auxStack.push(generalStack.peek());
+//        generalStack.pop();
+//    }
+//    while(!auxStack.isEmpty()){
+//        inverseStack.push(inverseDirection(auxStack.peek()));
+//        auxStack.pop();
+//    }
+//}
 
 void move(char direction){
     maze[actualRow][actualCol][4] = '1';
-    double startTime = millis();
-    double endTime = 0;
     if(direction=='W'){   //Will move West
         actualCol--;
         if(comeFrom=='S')
           spinPID(bno, event, mpu, -90);
         else if(comeFrom=='E'){
-          while(endTime - startTime < 1000){
-            forwardPID(bno, event, mpu);
-            filtrateDistances(ultraFront, ultraRight, ultraLeft);
-            endTime=millis();
-          }       
-          stop(true);
+          oneStep(ultraFront, ultraRight, ultraLeft, 34);
         }
         else if(comeFrom=='N')
           spinPID(bno, event, mpu, 90);
@@ -112,12 +105,7 @@ void move(char direction){
         if(comeFrom=='W')
           spinPID(bno, event, mpu, -90);
         else if(comeFrom=='S'){
-          while(endTime - startTime < 1000){
-            forwardPID(bno, event, mpu);
-            filtrateDistances(ultraFront, ultraRight, ultraLeft);
-            endTime=millis();
-          } 
-          stop(true);
+          oneStep(ultraFront, ultraRight, ultraLeft, 34);
         }
         else if(comeFrom=='E')
           spinPID(bno, event, mpu, 90);
@@ -128,12 +116,7 @@ void move(char direction){
         if(comeFrom=='N')
           spinPID(bno, event, mpu, -90);
         else if(comeFrom=='W'){
-          while(endTime - startTime < 1000){
-            forwardPID(bno, event, mpu);
-            filtrateDistances(ultraFront, ultraRight, ultraLeft);
-            endTime=millis();
-          } 
-          stop(true);
+          oneStep(ultraFront, ultraRight, ultraLeft, 34);
         }
         else if(comeFrom=='S')
           spinPID(bno, event, mpu, 90);       
@@ -144,12 +127,7 @@ void move(char direction){
         if(comeFrom=='E')
           spinPID(bno, event, mpu, -90);
         else if(comeFrom=='N'){
-          while(endTime - startTime < 1000){
-            forwardPID(bno, event, mpu);
-            filtrateDistances(ultraFront, ultraRight, ultraLeft);
-            endTime=millis();
-          } 
-          stop(true);
+          oneStep(ultraFront, ultraRight, ultraLeft, 34);
         }
         else if(comeFrom=='W')
           spinPID(bno, event, mpu, 90);     
@@ -192,7 +170,7 @@ bool robotMovement(StackArray<char> &generalStack, StackArray<char> &fatherStack
             fatherStack.pop();
         }
         if(!fatherStack.isEmpty()){
-            addInverseStack(generalStack, inverseStack);
+//            addInverseStack(generalStack, inverseStack);
             if(inverseStack.isEmpty()){
                 fatherStack.pop();
             }
@@ -227,7 +205,7 @@ void mazeAlgorithm(){
     String bits="000000";
     StackArray <char> fatherStack;
     StackArray <char> generalStack;
-    StackArray <char> inverseStack;
+//    StackArray <char> inverseStack;
     initMaze();
     do{
         filtrateDistances(ultraFront, ultraRight, ultraLeft);
