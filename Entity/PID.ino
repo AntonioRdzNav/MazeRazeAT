@@ -21,7 +21,6 @@ void calculateFakeSetpoint(int angle) {
   fakeSetpoint = newFakeSetpoint;
 }
 void setFakeSetpoint(){
-//  Offset = abs(Setpoint) - abs(Input);
   fakeSetpoint = Input;
 }
 
@@ -121,71 +120,86 @@ void forwardPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu) {
   }
 }
 
-void spinPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu, int newAngle){
+void spinPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu, int newAngle, bool isDeadEnd){
+  stop(true);
+  bool canBack=false;
   lastSetpoint = Setpoint;
   calculateNewSetpoint(newAngle);
+  Serial.println(fakeSetpoint);
   leftPID.SetTunings(rightTurnKp, rightTurnKi, rightTurnKd);
   rightPID.SetTunings(leftTurnKp, leftTurnKi, leftTurnKd);
-  delay(200);
+  filtrateDistances(ultraFront, ultraRight, ultraLeft); 
+  if(newAngle>0){
+    if(ultraLeft.side)   
+      canBack=true;
+  }
+  else{
+    if(ultraRight.side)
+      canBack=true;
+  }
   turnPID(bno, event, mpu, 1600);//3000
-  if(abs(Setpoint)-abs(Input) > 50){
+  if(abs(fakeSetpoint)-abs(Input) > 50){
     leftPID.SetTunings(rightTurnKp, rightAlignKi, rightAlignKd);
     rightPID.SetTunings(leftTurnKp, leftAlignKi, leftAlignKd);
   }
-  else if(abs(Setpoint)-abs(Input)<=50 && abs(Setpoint)-abs(Input)>30){
+  else if(abs(fakeSetpoint)-abs(Input)<=50 && abs(fakeSetpoint)-abs(Input)>30){
     leftPID.SetTunings(2.5, rightAlignKi, rightAlignKd);
     rightPID.SetTunings(2.5, leftAlignKi, leftAlignKd);
   }
-  else if(abs(Setpoint)-abs(Input) < 30){
+  else if(abs(fakeSetpoint)-abs(Input) < 30){
     leftPID.SetTunings(rightAlignKp, rightAlignKi, rightAlignKd);
     rightPID.SetTunings(leftAlignKp, leftAlignKi, leftAlignKd);
   }
   turnPID(bno, event, mpu, 500);//2500
   leftPID.SetTunings(rightConsKp, rightConsKi, rightConsKd);
   rightPID.SetTunings(leftConsKp, leftConsKi, leftConsKd);
+  if(canBack && !isDeadEnd){
+     backPID(bno, event, mpu);      
+     stop(false);
+     setFakeSetpoint();   
+     oneStep(ultraFront, ultraRight, ultraLeft, backStepDistance);
+  }
+  else
+    oneStep(ultraFront, ultraRight, ultraLeft, stepDistance);
 }
 
 void turnPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu, double time) {
   double startTime = millis();
   double endTime = 0;
-  bool enter = false;
+  double tempOutput;
   readPosition(bno, event, mpu, 'B');
-  while (endTime - startTime < time /*|| (rightOutput == 0 && leftOutput == 0)*/) {
-    enter=true;
+  while(endTime - startTime < time) {
     filtrateDistances(ultraFront, ultraRight, ultraLeft);
-//    Serial.print(ultraLeft.distance);
-//    Serial.print("\t");
-//    Serial.print(ultraFront.distance);
-//    Serial.print("\t");
-//    Serial.println(ultraRight.distance);
     bno.getEvent(&event);
     leftPID.Compute();  //Gets an output
     rightPID.Compute();
-    if(Setpoint==180){
+    (leftOutput==0)? tempOutput=rightOutput: tempOutput=leftOutput;
+    turnOnLeds();
+    if(Setpoint==180u){
       if (Input>0) {
-      analogWrite(motorL2, leftOutput);
-      analogWrite(motorR2, 0);
-      analogWrite(motorR1, leftOutput);
-      analogWrite(motorL1, 0);
+        analogWrite(motorL2, tempOutput);
+        analogWrite(motorR2, 0);
+        analogWrite(motorR1, tempOutput);
+        analogWrite(motorL1, 0);
       }
       else {
-        analogWrite(motorR2, leftOutput);
+        analogWrite(motorR2, tempOutput);
         analogWrite(motorL2, 0);
         analogWrite(motorR1, 0);
-        analogWrite(motorL1, leftOutput);
+        analogWrite(motorL1, tempOutput);
       }
     }
     else if(Setpoint==-180){
       if (Input<0) {
       analogWrite(motorL2, 0);
-      analogWrite(motorR2, rightOutput);
+      analogWrite(motorR2, tempOutput);
       analogWrite(motorR1, 0);
-      analogWrite(motorL1, rightOutput);
+      analogWrite(motorL1, tempOutput);
       }
       else {
         analogWrite(motorR2, 0);
-        analogWrite(motorL2, rightOutput);
-        analogWrite(motorR1, rightOutput);
+        analogWrite(motorL2, tempOutput);
+        analogWrite(motorR1, tempOutput);
         analogWrite(motorL1, 0);
       }
     }
@@ -207,7 +221,5 @@ void turnPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu, double 
     readPosition(bno, event, mpu, 'B');
     endTime = millis();
   }
-  if(enter)
-    blinkingLEDS();
 }
 

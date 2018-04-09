@@ -10,8 +10,8 @@
 #define motorL2 6
 #define motorR1 11 //Forward
 #define motorR2 10
-double velGenDer = 100;
-double velGenIzq = 100;
+double velGenDer = 85;
+double velGenIzq = 85;
 double velGenDerBack = 55;
 double velGenIzqBack = 55;
 
@@ -23,7 +23,8 @@ double velGenIzqBack = 55;
 #define trigLeft 8
 #define echoFront 3
 #define trigFront 2  
-bool special;
+bool special, ultraNegativoSide;
+double stepDistance = 24, backStepDistance = 34;
 double MAX_DISTANCE = 250;  //Prevents from waiting too long on pulseIn()
 NewPing pingFront(trigFront, echoFront, MAX_DISTANCE);
 NewPing pingRight(trigRight, echoRight, MAX_DISTANCE);
@@ -179,18 +180,14 @@ void setup() {
 }
 
 void loop(){
-   forwardPID(bno, event, mpu);
-   filtrateDistances(ultraFront, ultraRight, ultraLeft);
-   if(ultraFront.side){
-       stop(true);
-       spinPID(bno, event, mpu, 90);
-       backPID(bno, event, mpu);
-       stop(false);   
-       setFakeSetpoint();
-       filtrateDistances(ultraFront, ultraRight, ultraLeft);      
-   }
+//   forwardPID(bno, event, mpu);
+//   filtrateDistances(ultraFront, ultraRight, ultraLeft);
+//   if(ultraFront.side){
+//       spinPID(bno, event, mpu, 90, false);
+//       filtrateDistances(ultraFront, ultraRight, ultraLeft);      
+//   }
 
-//  rightPriotity(ultraFront, ultraRight, ultraLeft);
+  rightPriotity(ultraFront, ultraRight, ultraLeft);
 
 //  readPosition(bno, event, mpu, 'B');
 //  filtrateDistances(ultraFront, ultraRight, ultraLeft);

@@ -17,3 +17,13 @@ void blinkingLEDS(){
   }
 }
 
+void turnOnLeds(){
+  digitalWrite(ledLeft, HIGH);
+  digitalWrite(ledRight, HIGH);
+}
+
+void turnOff(){
+  digitalWrite(ledLeft, LOW);
+  digitalWrite(ledRight, LOW);
+}
+
