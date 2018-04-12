@@ -9,11 +9,21 @@ void ledsPID(){
 }
 
 void blinkingLEDS(){
-  for(int i=0; i<10; i++){
+  for(int i=0; i<7; i++){
     digitalWrite(ledLeft, HIGH); digitalWrite(ledRight, HIGH); 
     delay(60);
     digitalWrite(ledLeft, LOW); digitalWrite(ledRight, LOW);
     delay(60);
   }
+}
+
+void turnOnLeds(){
+  digitalWrite(ledLeft, HIGH);
+  digitalWrite(ledRight, HIGH);
+}
+
+void turnOff(){
+  digitalWrite(ledLeft, LOW);
+  digitalWrite(ledRight, LOW);
 }
 

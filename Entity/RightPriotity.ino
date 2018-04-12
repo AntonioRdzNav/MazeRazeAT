@@ -1,26 +1,33 @@
-void rightPriotity(UltraKalman &ultraRight, UltraKalman &ultraLeft, UltraKalman &ultraFront){  
-  filtrateDistances(ultraRight, ultraLeft, ultraFront);
+void oneStep(UltraKalman ultraFront, UltraKalman &ultraRight, UltraKalman &ultraLeft, double distanceCM){
+    double startDistance = ultraFront.distance;
+    if(startDistance-distanceCM < 5){
+      while(!ultraNegativoSide){
+        forwardPID(bno, event, mpu);
+        filtrateDistances(ultraFront, ultraRight, ultraLeft);
+      } 
+    }
+    else{
+      while(ultraFront.distance>startDistance-distanceCM){
+        forwardPID(bno, event, mpu);
+        filtrateDistances(ultraFront, ultraRight, ultraLeft);
+      } 
+    }
+}
+
+void rightPriotity(UltraKalman &ultraFront, UltraKalman &ultraRight, UltraKalman &ultraLeft){ 
+  filtrateDistances(ultraFront, ultraRight, ultraLeft);
   readPosition(bno, event, mpu, 'B');
   if(!ultraRight.side){ 
-   lastSetpoint = Setpoint;
-   Setpoint = calculateNewSetpoint(90);
-   spinPID(bno, event, mpu);
+    spinPID(bno, event, mpu, 90, false);
   }
   else if (!ultraFront.side){
-    forwardPID(bno, event, mpu);
-    ledsPID();
+    oneStep(ultraFront, ultraRight, ultraLeft, stepDistance);
   }
   else if(!ultraLeft.side){
-   lastSetpoint = Setpoint;
-   Setpoint = calculateNewSetpoint(-90);
-   spinPID(bno, event, mpu);
+    spinPID(bno, event, mpu, -90, false);  
   }
   else{
-   lastSetpoint = Setpoint;
-   Setpoint = calculateNewSetpoint(90);
-   spinPID(bno, event, mpu);
-   lastSetpoint = Setpoint;
-   Setpoint = calculateNewSetpoint(90);
-   spinPID(bno, event, mpu);
+   spinPID(bno, event, mpu, 90, true);
+   spinPID(bno, event, mpu, 90, false);
   }  
 }

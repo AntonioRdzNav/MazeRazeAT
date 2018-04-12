@@ -1,31 +1,48 @@
 #include <StackArray.h>
 #include <math.h>
 
+//////////////////////////////////////////////LCD////////////////////////////////////////////////
+#include <LiquidCrystal_I2C.h>
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+int lastMillis, actualMillis;
+
 //////////////////////////////////////////////LEDs////////////////////////////////////////////////
-#define ledRight 13
-#define ledLeft 12
+//#define ledRight 13
+//#define ledLeft 12
+#define ledRight 28
+#define ledLeft 29
 
 /////////////////////////////////////////////MOTORS///////////////////////////////////////////////
-#define motorL1 9 //Forward
-#define motorL2 6
-#define motorR1 11 //Forward
-#define motorR2 10
-double velGenDer = 65;
-double velGenIzq = 65;
+#define motorL1 3 //Forward
+#define motorL2 2
+#define motorR1 5 
+#define motorR2 4 //Forward
+double velGenDer = 80;
+double velGenIzq = 80;
+double velGenDerBack = 45;
+double velGenIzqBack = 45;
 
 ///////////////////////////////////////////ULTRASONICS////////////////////////////////////////////
 #include <NewPing.h>
-#define echoRight 4
-#define trigRight 5
-#define echoLeft 7
-#define trigLeft 8
-#define echoFront 2
-#define trigFront 3  
-bool special;
+//#define echoRight 4
+//#define trigRight 5
+//#define echoLeft 7
+//#define trigLeft 8
+//#define echoFront 3
+//#define trigFront 2  
+#define echoRight 25
+#define trigRight 24
+#define echoLeft 27
+#define trigLeft 26
+#define echoFront 22
+#define trigFront 23  
+bool special, ultraNegativoSide;
+double stepDistance = 24, backStepDistance = 34;
 double MAX_DISTANCE = 250;  //Prevents from waiting too long on pulseIn()
 NewPing pingFront(trigFront, echoFront, MAX_DISTANCE);
 NewPing pingRight(trigRight, echoRight, MAX_DISTANCE);
 NewPing pingLeft(trigLeft, echoLeft, MAX_DISTANCE);
+String bits="000000";
 
 ///////////////////////////////////////////BNO///////////////////////////////////////////////////
 #include <Wire.h>
@@ -44,23 +61,23 @@ Vector normGyro;
 #include <utility/imumaths.h>
 #include <PID_v1.h>
 double leftAlignKp=4, leftAlignKi=0, leftAlignKd=0;
-double leftTurnKp=1.6, leftTurnKi=0, leftTurnKd=0;
-double leftConsKp=4.1, leftConsKi=0, leftConsKd=0;
+double leftTurnKp=2, leftTurnKi=0, leftTurnKd=0;
+double leftConsKp=7.3, leftConsKi=0, leftConsKd=0;
 double leftGenKp=leftConsKp, leftGenKi=leftConsKi, leftGenKd=leftConsKd;
 double leftError=0;
 double rightAlignKp=4, rightAlignKi=0, rightAlignKd=0;
-double rightTurnKp=1.6, rightTurnKi=0, rightTurnKd=0;
-double rightConsKp=4.1, rightConsKi=0, rightConsKd=0;
+double rightTurnKp=2, rightTurnKi=0, rightTurnKd=0;
+double rightConsKp=9, rightConsKi=0, rightConsKd=0;
 double rightGenKp=rightConsKp, rightGenKi=rightConsKi, rightGenKd=rightConsKd;
 double rightError=0;
-double Setpoint, leftOutput, rightOutput, Input, rawInput, fakeInput, lastSetpoint;
+double Offset, Setpoint, fakeSetpoint, leftOutput, rightOutput, Input, rawInput, fakeInput, lastSetpoint;
 double outputDifference = 5;
-PID leftPID(&fakeInput, &leftOutput, &Setpoint, leftGenKp, leftGenKi, leftGenKd, DIRECT); // (Values>0)
-PID rightPID(&fakeInput, &rightOutput, &Setpoint, rightGenKp, rightGenKi, rightGenKd, REVERSE); // (Values<0)
+PID leftPID(&fakeInput, &leftOutput, &fakeSetpoint, leftGenKp, leftGenKi, leftGenKd, DIRECT); // (Values>0)
+PID rightPID(&fakeInput, &rightOutput, &fakeSetpoint, rightGenKp, rightGenKi, rightGenKd, REVERSE); // (Values<0)
 
 //////////////////////////////////////////////ALGORITHM/////////////////////////////////////////////////
 const int mazeSize=9;
-int actualRow=8, actualCol=6;
+int actualRow=0, actualCol=0;
 char comeFrom='S';
 String maze[mazeSize][mazeSize];
 
@@ -84,7 +101,7 @@ String maze[mazeSize][mazeSize];
 ///////////////////////////////////////////ULTRA KALMAN FILTER///////////////////////////////////////////
 struct UltraKalman{
   UltraKalman(){
-    varSensor = 0.1e-4; //Variance of sensor. The LESS, the MORE it looks like the raw input.
+    varSensor = 3e-6; //Variance of sensor. The LESS, the MORE it looks like the raw input.
     varProcess = 1e-7; 
     P = 1.0;
     Pc = 0.0;
@@ -172,37 +189,45 @@ void setup() {
   leftPID.SetOutputLimits(0, 255); 
   rightPID.SetSampleTime(1); // Set Sample Time
   rightPID.SetMode(AUTOMATIC);
-  rightPID.SetOutputLimits(0, 255); 
-  delay(300);
+  rightPID.SetOutputLimits(0, 255);
+//// LCD
+//  lcd.backlight();
+  lcd.begin();
+  delay(500);
 }
 
 void loop(){
 //   forwardPID(bno, event, mpu);
-//   ledsPID();
 //   filtrateDistances(ultraFront, ultraRight, ultraLeft);
 //   if(ultraFront.side){
-//       stop();
-//       delay(500);
-//       lastSetpoint = Setpoint;
-//       Setpoint = calculateNewSetpoint(90);
-//       spinPID(bno, event, mpu);
-//       // backPID(bno, event, mpu);
-//       // stop();
-//       // delay(500);      
+//       spinPID(bno, event, mpu, 90, false);
 //       filtrateDistances(ultraFront, ultraRight, ultraLeft);      
-//       delay(900);
 //   }
 
-//  rightPriotity(ultraRight, ultraLeft, ultraFront);
-  filtrateDistances(ultraFront, ultraRight, ultraLeft);
-  Serial.print(ultraLeft.distance);
-  Serial.print("\t");
-  Serial.print(ultraFront.distance);
-  Serial.print("\t");
-  Serial.println(ultraRight.distance);
+//  rightPriotity(ultraFront, ultraRight, ultraLeft);
+
+  mazeAlgorithm();
+//  writeStringLCD("HOLA", 0, 1);
+  
+//  filtrateDistances(ultraFront, ultraRight, ultraLeft);
+//  Serial.println(getBitWithValues(bits));
+
+//  readPosition(bno, event, mpu, 'B');
+//  filtrateDistances(ultraFront, ultraRight, ultraLeft);
+//  oneStep(ultraFront, ultraRight, ultraLeft, 35);
+//  spinPID(bno, event, mpu, 90);
+//backPID(bno, event, mpu);
+
+
+//  filtrateDistances(ultraFront, ultraRight, ultraLeft);
+//  Serial.print(ultraLeft.distance);
+//  Serial.print("\t");
+//  Serial.print(ultraFront.distance);
+//  Serial.print("\t");
+//  Serial.println(ultraRight.distance);
 
 //  xBNO_RawKalman(bno, event);
-//  ultraFront_RawKalman(ultraFront);
-//  ultraLeft_RawKalman(ultraLeft);
-//  ultraRight_RawKalman(ultraRight);
+//  ultra_RawKalman(ultraFront, pingFront);
+//  ultra_RawKalman(ultraLeft, pingLeft);
+//  ultra_RawKalman(ultraRight, pingRight);
 }

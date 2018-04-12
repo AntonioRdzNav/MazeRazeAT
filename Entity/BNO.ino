@@ -12,10 +12,8 @@ void readBNO(Adafruit_BNO055 &bno, sensors_event_t &event){
   if(Input>180) 
     Input = Input - 360;
   fakeInput = Input;
-  if((Setpoint==90&&abs(lastSetpoint)==180) || (Setpoint==180))
-    fakeInput = abs(Input);
-  if((Setpoint==-90 && abs(lastSetpoint)==180) || (Setpoint==-180))
-    fakeInput = -1*abs(Input);
+  if((abs(Setpoint)==90&&abs(lastSetpoint)==180) || abs(Setpoint)==180)
+    fakeInput = fakeSetpoint > 0 ? abs(Input) : -1*abs(Input);
 }
 
 //void printBNO(sensors_event_t event){
