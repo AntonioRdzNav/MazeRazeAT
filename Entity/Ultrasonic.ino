@@ -5,16 +5,9 @@ void filterUltrasonic(){
 }
 
 void rawUltrasonic(UltraKalman &ultra, NewPing ping){
-//  double filter = 0;
-//  double temp = 0;
-//  for(int i = 0; i < 20; i++){
-//    temp = ping.ping_cm();
-//    if(i != 0 && i != 19){
-//      filter += temp;
-//    }
-//  }
-//  ultra.distance = filter / 18;
-  ultra.distance = ping.ping_cm();
+  double ultraTemp = ping.ping_cm();
+  if(ultraTemp<200 && ultraTemp!=0)
+    ultra.distance = ultraTemp;
 }
 
 

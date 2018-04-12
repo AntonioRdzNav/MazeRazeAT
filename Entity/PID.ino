@@ -25,12 +25,13 @@ void setFakeSetpoint(){
 }
 
 void backPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu) {
-  leftPID.SetTunings(4, rightTurnKi, rightTurnKd);
-  rightPID.SetTunings(4, leftTurnKi, leftTurnKd);
+  leftPID.SetTunings(rightConsKp+1, rightTurnKi, rightTurnKd);
+  rightPID.SetTunings(leftConsKp+1, leftTurnKi, leftTurnKd);
   double startTime = millis();
   double endTime = 0;
   readPosition(bno, event, mpu, 'B');
-  while (endTime - startTime < 1100 || (rightOutput == 0 && leftOutput == 0)) {
+  filtrateDistances(ultraFront, ultraRight, ultraLeft); 
+  while (endTime - startTime < 1500 || (rightOutput == 0 && leftOutput == 0)) {
     leftPID.Compute();  //Gets an output
     rightPID.Compute();
     if(abs(Setpoint)==180){
@@ -71,6 +72,7 @@ void backPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu) {
     }
     ledsPID();
     readPosition(bno, event, mpu, 'B');
+    filtrateDistances(ultraFront, ultraRight, ultraLeft); 
     endTime = millis();
   } 
   leftPID.SetTunings(rightConsKp, rightConsKi, rightConsKd);
@@ -78,7 +80,8 @@ void backPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu) {
 }
 
 void forwardPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu) {
-  readPosition(bno, event, mpu, 'B');
+  readPosition(bno, event, mpu, 'B');     
+  filtrateDistances(ultraFront, ultraRight, ultraLeft); 
   leftPID.Compute();  //Gets an output
   rightPID.Compute();
   ledsPID();
@@ -125,7 +128,6 @@ void spinPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu, int new
   bool canBack=false;
   lastSetpoint = Setpoint;
   calculateNewSetpoint(newAngle);
-  Serial.println(fakeSetpoint);
   leftPID.SetTunings(rightTurnKp, rightTurnKi, rightTurnKd);
   rightPID.SetTunings(leftTurnKp, leftTurnKi, leftTurnKd);
   filtrateDistances(ultraFront, ultraRight, ultraLeft); 
@@ -168,6 +170,7 @@ void turnPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu, double 
   double endTime = 0;
   double tempOutput;
   readPosition(bno, event, mpu, 'B');
+  filtrateDistances(ultraFront, ultraRight, ultraLeft); 
   while(endTime - startTime < time) {
     filtrateDistances(ultraFront, ultraRight, ultraLeft);
     bno.getEvent(&event);
