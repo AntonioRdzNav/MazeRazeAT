@@ -4,26 +4,26 @@ void ledsPID(){
 //  Serial.print(leftOutput);
 //  Serial.print("\t\t\t");
 //  Serial.println(rightOutput);
-  (leftOutput > 5)? digitalWrite(ledLeft, HIGH): digitalWrite(ledLeft, LOW); 
-  (rightOutput > 5)? digitalWrite(ledRight, HIGH): digitalWrite(ledRight, LOW);
+  (leftOutput > 5)? digitalWrite(ledGreen, HIGH): digitalWrite(ledGreen, LOW); 
+  (rightOutput > 5)? digitalWrite(ledRed, HIGH): digitalWrite(ledRed, LOW);
 }
 
 void blinkingLEDS(){
   for(int i=0; i<7; i++){
-    digitalWrite(ledLeft, HIGH); digitalWrite(ledRight, HIGH); 
+    digitalWrite(ledGreen, HIGH); digitalWrite(ledRed, HIGH); 
     delay(60);
-    digitalWrite(ledLeft, LOW); digitalWrite(ledRight, LOW);
+    digitalWrite(ledGreen, LOW); digitalWrite(ledRed, LOW);
     delay(60);
   }
 }
 
 void turnOnLeds(){
-  digitalWrite(ledLeft, HIGH);
-  digitalWrite(ledRight, HIGH);
+  digitalWrite(ledGreen, HIGH);
+  digitalWrite(ledRed, HIGH);
 }
 
 void turnOff(){
-  digitalWrite(ledLeft, LOW);
-  digitalWrite(ledRight, LOW);
+  digitalWrite(ledGreen, LOW);
+  digitalWrite(ledRed, LOW);
 }
 

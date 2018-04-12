@@ -17,19 +17,19 @@ void printMaze(){
     Serial.println("------------------------------------------");
 }
 
-void printStack(StackArray <char> stack){
-  if(!stack.isEmpty())
-    Serial.println(stack.peek());
-}
-void printAllStacks(StackArray<char> generalStack, StackArray<char> fatherStack, StackArray<char> inverseStack){
-    Serial.print("GeneralStack:");
-    printStack(generalStack);
-    Serial.print("FatherStack:"); 
-    printStack(fatherStack);
-    Serial.print("InverseStack:");
-    printStack(inverseStack);
-    Serial.println("");
-}
+//void printStack(StackArray <char> stack){
+//  if(!stack.isEmpty())
+//    Serial.println(stack.peek());
+//}
+//void printAllStacks(StackArray<char> generalStack, StackArray<char> fatherStack, StackArray<char> inverseStack){
+//    Serial.print("GeneralStack:");
+//    printStack(generalStack);
+//    Serial.print("FatherStack:"); 
+//    printStack(fatherStack);
+//    Serial.print("InverseStack:");
+//    printStack(inverseStack);
+//    Serial.println("");
+//}
 
 int countAvailableMovements(){
     int moves=0;
@@ -108,17 +108,17 @@ char inverseDirection(char direction){
     else if(direction == 'S')   //Will move South
         return 'N';
 }
-void addInverseStack(StackArray<char> generalStack, StackArray<char> &inverseStack){
-    StackArray <char>auxStack;
-    while(generalStack.peek()!='#'){
-        auxStack.push(generalStack.peek());
-        generalStack.pop();
-    }
-    while(!auxStack.isEmpty()){
-        inverseStack.push(inverseDirection(auxStack.peek()));
-        auxStack.pop();
-    }
-}
+//void addInverseStack(StackArray<char> generalStack, StackArray<char> &inverseStack){
+//    StackArray <char>auxStack;
+//    while(generalStack.peek()!='#'){
+//        auxStack.push(generalStack.peek());
+//        generalStack.pop();
+//    }
+//    while(!auxStack.isEmpty()){
+//        inverseStack.push(inverseDirection(auxStack.peek()));
+//        auxStack.pop();
+//    }
+//}
 
 void move(char direction){
     Serial.println("MOVING");
@@ -225,57 +225,57 @@ bool robotMovement(StackArray<char> &generalStack, StackArray<char> &fatherStack
 //      move(movements[i]);
 //    }
 
-    if(nMovements == 0){
-        if(generalStack.peek()=='#' && fatherStack.peek()=='#'){
-            Serial.println("GATO GATO");
-            generalStack.pop();
-            fatherStack.pop();
-            isFather = true;
-        }
-        if(!fatherStack.isEmpty()){
-//            addInverseStack(generalStack, inverseStack);
-            if(generalStack.peek()=='#'){
-                Serial.println("CANCELA MOVIMIENTO");
-                fatherStack.pop();
-                isFather=true;
-            }
-            if(!isFather){
-                Serial.println("GIRO 180");
-                spinPID(bno, event, mpu, 90, true);
-                spinPID(bno, event, mpu, 90, false);
-            }
-            while(generalStack.peek()!='#'){//Returns to last father
-                move(inverseDirection(generalStack.peek()));
-                printMaze();
-                Serial.println("REGRESA");
-  //                printAllStacks(generalStack, fatherStack, inverseStack);                
-                generalStack.pop();
-//                inverseStack.pop();
-            }
-        }
-        else{
-            Serial.println("SE ACABO");
-            return true;//Algorith DONE
-        }
-    }
-    else{
-        if(nMovements > 1){
-            addFatherStack(generalStack, fatherStack);
-            Serial.println("CREA PADRE");
-//            printAllStacks(generalStack, fatherStack, inverseStack);
-        }
-        if(generalStack.peek()=='#' && fatherStack.peek()!='#'){
-            Serial.println("AGREGA MOVIMIENTO A PADRE");
-            generalStack.push(fatherStack.peek());
-            fatherStack.pop();
-        }
-        else{
-            Serial.println("GENERAL MOVEMENT");
-            addGeneralStack(generalStack);
-        }
-//        printAllStacks(generalStack, fatherStack, inverseStack);
-        move(generalStack.peek());
-    }
+//    if(nMovements == 0){
+//        if(generalStack.peek()=='#' && fatherStack.peek()=='#'){
+//            Serial.println("GATO GATO");
+//            generalStack.pop();
+//            fatherStack.pop();
+//            isFather = true;
+//        }
+//        if(!fatherStack.isEmpty()){
+////            addInverseStack(generalStack, inverseStack);
+//            if(generalStack.peek()=='#'){
+//                Serial.println("CANCELA MOVIMIENTO");
+//                fatherStack.pop();
+//                isFather=true;
+//            }
+//            if(!isFather){
+//                Serial.println("GIRO 180");
+//                spinPID(bno, event, mpu, 90, true);
+//                spinPID(bno, event, mpu, 90, false);
+//            }
+//            while(generalStack.peek()!='#'){//Returns to last father
+//                move(inverseDirection(generalStack.peek()));
+//                printMaze();
+//                Serial.println("REGRESA");
+//  //                printAllStacks(generalStack, fatherStack, inverseStack);                
+//                generalStack.pop();
+////                inverseStack.pop();
+//            }
+//        }
+//        else{
+//            Serial.println("SE ACABO");
+//            return true;//Algorith DONE
+//        }
+//    }
+//    else{
+//        if(nMovements > 1){
+//            addFatherStack(generalStack, fatherStack);
+//            Serial.println("CREA PADRE");
+////            printAllStacks(generalStack, fatherStack, inverseStack);
+//        }
+//        if(generalStack.peek()=='#' && fatherStack.peek()!='#'){
+//            Serial.println("AGREGA MOVIMIENTO A PADRE");
+//            generalStack.push(fatherStack.peek());
+//            fatherStack.pop();
+//        }
+//        else{
+//            Serial.println("GENERAL MOVEMENT");
+//            addGeneralStack(generalStack);
+//        }
+////        printAllStacks(generalStack, fatherStack, inverseStack);
+//        move(generalStack.peek());
+//    }
     return false;
 }
 

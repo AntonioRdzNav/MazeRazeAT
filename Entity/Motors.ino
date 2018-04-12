@@ -7,10 +7,18 @@ void stop(bool isSpin){
     double startTime = millis();
     double endTime = 0;
     while (endTime - startTime < 60){
-      analogWrite(motorR1, 235);
-      analogWrite(motorR2, 0);
-      analogWrite(motorL1, 235);
-      analogWrite(motorL2, 0);
+      digitalWrite(M1Back, HIGH);
+      digitalWrite(M1Front, LOW);
+      analogWrite(M1PWM, 235);
+      digitalWrite(M2Back, HIGH);
+      digitalWrite(M2Front, LOW);
+      analogWrite(M2PWM, 235);
+      digitalWrite(M3Back, HIGH);
+      digitalWrite(M3Front, LOW);
+      analogWrite(M3PWM, 235);
+      digitalWrite(M4Back, HIGH);
+      digitalWrite(M4Front, LOW);
+      analogWrite(M4PWM, 235);      
       endTime = millis();
     } 
   }                                                                                  
