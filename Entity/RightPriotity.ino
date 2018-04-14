@@ -27,7 +27,7 @@ void rightPriotity(UltraKalman &ultraFront, UltraKalman &ultraRight, UltraKalman
     spinPID(bno, event, mpu, -90, false);  
   }
   else{
-   spinPID(bno, event, mpu, 90, true);
-   spinPID(bno, event, mpu, 90, false);
+//   spinPID(bno, event, mpu, 90, true);
+   spinPID(bno, event, mpu, 180, false);
   }  
 }

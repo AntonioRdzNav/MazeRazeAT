@@ -7,35 +7,79 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 int lastMillis, actualMillis;
 
 //////////////////////////////////////////////LEDs////////////////////////////////////////////////
+//UNO
 //#define ledRight 13
 //#define ledLeft 12
-#define ledRight 28
-#define ledLeft 29
+//MEGA
+#define ledRed 13
+#define ledGreen 12
+#define ledBlue 45
+//PLACA
+//#define ledRed 53
+//#define ledGreen 47
+//#define ledBlue 45
 
 /////////////////////////////////////////////MOTORS///////////////////////////////////////////////
-#define motorL1 3 //Forward
+//UNO
+#define motorL1 3
 #define motorL2 2
 #define motorR1 5 
 #define motorR2 4 //Forward
-double velGenDer = 80;
-double velGenIzq = 80;
+//PLACA
+//#define M2Back 2 //Back
+//#define M2Front 3  //Front
+//#define M2PWM 4  //PWM
+//#define M1Back 5 //Back
+//#define M1Front 6  //Front
+//#define M1PWM 7  //PWM
+//#define M3Back 48 //Back
+//#define M3Front 46  //Front
+//#define M3PWM 8  //PWM
+//#define M4Back 52 //Back
+//#define M4Front 50  //Front
+//#define M4PWM 9  //PWM
+double velGenDer = 90;
+double velGenIzq = 75;
 double velGenDerBack = 45;
 double velGenIzqBack = 45;
 
+/////////////////////////////////////////////ENCODERS///////////////////////////////////////////////
+#define limitSwitchIzq A9
+#define limitSwitchDer A3
+
+/////////////////////////////////////////////ENCODERS///////////////////////////////////////////////
+#define encoderM1Front 13
+#define encoderM1Back 12
+#define encoderM2Front A13
+#define encoderM2Back A12
+#define encoderM3Front 11
+#define encoderM3Back 10
+#define encoderM4Front A15
+#define encoderM4Back A14
+
 ///////////////////////////////////////////ULTRASONICS////////////////////////////////////////////
 #include <NewPing.h>
+//UNO
 //#define echoRight 4
 //#define trigRight 5
 //#define echoLeft 7
 //#define trigLeft 8
 //#define echoFront 3
 //#define trigFront 2  
-#define echoRight 25
-#define trigRight 24
-#define echoLeft 27
-#define trigLeft 26
+//MEGA
+#define echoRight 24
+#define trigRight 25
+#define echoLeft 26
+#define trigLeft 27
 #define echoFront 22
 #define trigFront 23  
+//PLACA
+//#define echoRight 25
+//#define trigRight 23
+//#define echoLeft 41
+//#define trigLeft 39
+//#define echoFront 33
+//#define trigFront 31
 bool special, ultraNegativoSide;
 double stepDistance = 24, backStepDistance = 34;
 double MAX_DISTANCE = 250;  //Prevents from waiting too long on pulseIn()
@@ -82,20 +126,19 @@ char comeFrom='S';
 String maze[mazeSize][mazeSize];
 
 ///////////////////////////////////////////////COLOR///////////////////////////////////////////////////
-//#define BotonColores 38
-//#define LED_red 22
-//#define LED_blue 23
-//#define LED_green 24
-//#define S0 34
-//#define S1 35
-//#define S2 53
-//#define S3 52
-//#define sensorOut 51
-//double r = 0, g = 0, b = 0;
-//const int num_col = 8;
-//const int range = 7;
-//int color_position;           //  0        1       2       3         4          5          6        7   
-//String color_names[num_col] = {"blanco", "rosa", "rojo", "azul", "naranja", "amarillo", "negro", "verde"};
+#define LED_red 22
+#define LED_blue 23
+#define LED_green 24
+#define S0 41
+#define S1 40
+#define S2 37
+#define S3 40
+#define sensorOut 36
+double r = 0, g = 0, b = 0;
+const int num_col = 4;
+const int range = 7;
+int color_position;           //  0        1       2       3    
+String color_names[num_col] = {"rojo", "azul", "verde", "negro"};
 //color color_position_arr[num_col];
 
 ///////////////////////////////////////////ULTRA KALMAN FILTER///////////////////////////////////////////
@@ -157,14 +200,43 @@ void setup() {
   pinMode(motorR2,OUTPUT);
   pinMode(motorL1,OUTPUT);
   pinMode(motorL2,OUTPUT);
-  pinMode(ledLeft,OUTPUT);
-  pinMode(ledRight,OUTPUT);
-  pinMode(echoRight, INPUT);
+//  pinMode(M1Back,OUTPUT);
+//  pinMode(M1Front,OUTPUT);
+//  pinMode(M1PWM,OUTPUT);
+//  pinMode(M2Back,OUTPUT);
+//  pinMode(M2Front,OUTPUT);
+//  pinMode(M2PWM,OUTPUT);
+//  pinMode(M3Back,OUTPUT);
+//  pinMode(M3Front,OUTPUT);
+//  pinMode(M3PWM,OUTPUT);
+//  pinMode(M4Back,OUTPUT);
+//  pinMode(M4Front,OUTPUT);
+//  pinMode(M4PWM,OUTPUT);
+  pinMode(ledGreen,OUTPUT);
+  pinMode(ledRed,OUTPUT);
+  pinMode(ledBlue,OUTPUT);  
+  pinMode(limitSwitchDer,INPUT);
+  pinMode(limitSwitchIzq,INPUT);
+  pinMode(encoderM1Front,INPUT);
+  pinMode(encoderM1Back,INPUT);
+  pinMode(encoderM2Front,INPUT);
+  pinMode(encoderM2Back,INPUT);
+  pinMode(encoderM3Front,INPUT);
+  pinMode(encoderM3Back,INPUT);
+  pinMode(encoderM4Front,INPUT);
+  pinMode(encoderM4Back,INPUT);  
   pinMode(trigRight, OUTPUT);
   pinMode(echoLeft, INPUT);
   pinMode(trigLeft, OUTPUT);
   pinMode(echoFront, INPUT);
   pinMode(trigFront, OUTPUT);
+  pinMode(S0, OUTPUT);
+  pinMode(S1, OUTPUT);
+  pinMode(S2, OUTPUT);
+  pinMode(S3, OUTPUT);
+  pinMode(sensorOut, INPUT);
+  digitalWrite(S0,HIGH);
+  digitalWrite(S1,LOW);    
 //// MPU
 //  Serial.println("Initializing MPU6050...");
 //  while(!mpu.begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_2G))
@@ -181,6 +253,9 @@ void setup() {
   } 
   else
     Serial.println("BNO STARTED");
+//  setCal();
+//  delay(3000);
+//  setFakeSetpoint();
   bno.setExtCrystalUse(true);
 //// PID
   Setpoint=0; //  Set reference point to 0
@@ -204,9 +279,9 @@ void loop(){
 //       filtrateDistances(ultraFront, ultraRight, ultraLeft);      
 //   }
 
-//  rightPriotity(ultraFront, ultraRight, ultraLeft);
+  rightPriotity(ultraFront, ultraRight, ultraLeft);
 
-  mazeAlgorithm();
+//  mazeAlgorithm();
 //  writeStringLCD("HOLA", 0, 1);
   
 //  filtrateDistances(ultraFront, ultraRight, ultraLeft);
@@ -218,6 +293,8 @@ void loop(){
 //  spinPID(bno, event, mpu, 90);
 //backPID(bno, event, mpu);
 
+//go();
+//digitalWrite(ledGreen, HIGH);
 
 //  filtrateDistances(ultraFront, ultraRight, ultraLeft);
 //  Serial.print(ultraLeft.distance);
