@@ -19,7 +19,6 @@ void blinkingLEDS(){
 
 void turnOnLeds(){
   digitalWrite(ledGreen, HIGH);
-  digitalWrite(ledRed, HIGH);
 }
 
 void turnOff(){

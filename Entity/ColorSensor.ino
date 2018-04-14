@@ -14,16 +14,13 @@
 //
 //void calibrarColores(){
 //  for(int i = 0; i < num_col; i++){
-//    Serial.println("La calibracion del color " + color_names[i] + " iniciara en 3 segundos.");
-//    estadoBoton = digitalRead(BotonColores);
-//    while(estadoBoton != HIGH){          
-//      digitalWrite(LED_red, HIGH);
-//      estadoBoton = digitalRead(BotonColores);
-//    }
-//    digitalWrite(LED_red, LOW);
+//    Serial.println("La calibracion del color " + color_names[i] + " iniciara en 3 segundos.");        
+//    digitalWrite(ledRed, HIGH);
+//    delay(3000);
+//    digitalWrite(ledRed, LOW);
 //    Serial.println("La calibracion del color " + color_names[i] + " ha comenzado.");
-//    digitalWrite(LED_blue, HIGH);
-//    //delay(1000);
+//    digitalWrite(ledBlue, HIGH);
+//    delay(1500);
 //    double avr_red = 0, avr_green = 0, avr_blue = 0;
 //    double COLOR_R, COLOR_G, COLOR_B;
 //    color_position_arr[i].nombre = color_names[i];
