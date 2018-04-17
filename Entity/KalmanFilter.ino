@@ -21,7 +21,7 @@ void filtrateDistances(UltraKalman &ultraFront, UltraKalman &ultraRight, UltraKa
   ultraKalmanFilter(ultraFront);
   ultraKalmanFilter(ultraRight);
   ultraKalmanFilter(ultraLeft);
-  if(ultraFront.Xe <= 18 && ultraFront.Xe!=0) ultraNegativoSide = true;
+  if(ultraFront.Xe <= 15 && ultraFront.Xe!=0) ultraNegativoSide = true;
   else ultraNegativoSide = false;
   if(ultraFront.Xe <= 25 && ultraFront.Xe!=0) ultraFront.side = true;
   else ultraFront.side = false;

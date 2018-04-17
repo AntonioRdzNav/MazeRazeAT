@@ -17,12 +17,35 @@ void blinkingLEDS(){
   }
 }
 
+void turnOnRedLED(){
+  digitalWrite(ledGreen, LOW);
+  digitalWrite(ledRed, HIGH);  
+  digitalWrite(ledBlue, LOW); 
+  delay(3000);
+  turnOffLeds();
+}
+void turnOnGreenLED(){
+  digitalWrite(ledGreen, HIGH);
+  digitalWrite(ledRed, LOW);  
+  digitalWrite(ledBlue, LOW); 
+  delay(3000);
+  turnOffLeds();
+}
+void turnOnBlueLED(){
+  digitalWrite(ledGreen, LOW);
+  digitalWrite(ledRed, LOW);  
+  digitalWrite(ledBlue, HIGH); 
+  delay(3000);
+  turnOffLeds();
+}
 void turnOnLeds(){
   digitalWrite(ledGreen, HIGH);
+  digitalWrite(ledRed, HIGH);  
+  digitalWrite(ledBlue, LOW);
 }
-
-void turnOff(){
+void turnOffLeds(){
   digitalWrite(ledGreen, LOW);
   digitalWrite(ledRed, LOW);
+  digitalWrite(ledBlue, LOW);
 }
 

@@ -27,7 +27,10 @@ void rightPriotity(UltraKalman &ultraFront, UltraKalman &ultraRight, UltraKalman
     spinPID(bno, event, mpu, -90, false);  
   }
   else{
-//   spinPID(bno, event, mpu, 90, true);
-   spinPID(bno, event, mpu, 180, false);
+    filtrateDistances(ultraFront, ultraRight, ultraLeft);
+    if(ultraRight.distance > ultraLeft.distance)
+      spinPID(bno, event, mpu, 180, false);
+    else 
+      spinPID(bno, event, mpu, -180, false);
   }  
 }
