@@ -16,12 +16,13 @@
 #define S0 36
 #define OE 40
 
-bool colorRedDetected=false, colorGreenDetected=false, colorBlackDetected=false, colorBlueDetected=false;
+bool colorRedDetected=false, colorGreenDetected=false, colorBlackDetected=false;
 double r = 0, g = 0, b = 0;
-const int num_col = 4;
-const int range = 15;
-int color_position;           //  0        1       2       3    
-String color_names[num_col] = {"rojo", "azul", "verde", "negro"};
+const int num_col = 15;
+const int range = 8;
+int color_position;           //  0        1       2       3        4
+String color_names[num_col] = {"rojo", "azul", "verde", "negro", "blanco"};
+bool switchColor=false;
 struct color{
   String nombre;
   double red;
@@ -250,6 +251,9 @@ void setup() {
 //  mpu.calibrateGyro();
 //  mpu.setThreshold(3);
 //// BNO
+  calibrarColores(0);
+  turnOffLeds();
+  delay(5000);
   if(!bno.begin())  {
     Serial.print("Ooops, no BNO055 detected ... Check your wiring or L2C ADDR!");
     while(1);
@@ -280,10 +284,9 @@ void loop(){
 //       spinPID(bno, event, mpu, 90, false);
 //       filtrateDistances(ultraFront, ultraRight, ultraLeft, ultraBack);      
 //   }
+//  Serial.println(currentColor());
 
-  calibrarColores(0);
-  while(1)
-    rightPriotity(ultraFront, ultraRight, ultraLeft); 
+  rightPriotity(ultraFront, ultraRight, ultraLeft); 
 
 //  mazeAlgorithm();
 //  writeStringLCD("HOLA", 0, 1);
