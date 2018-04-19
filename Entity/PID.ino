@@ -20,117 +20,157 @@ void calculateFakeSetpoint(int angle) {
     newFakeSetpoint -= 360;
   fakeSetpoint = newFakeSetpoint;
 }
-void setFakeSetpoint(){
+void setNewFakeSetpoint(){
   fakeSetpoint = Input;
 }
 
-void backPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu) {
-  leftPID.SetTunings(rightConsKp+1, rightTurnKi, rightTurnKd);
-  rightPID.SetTunings(leftConsKp+1, leftTurnKi, leftTurnKd);
+void edoTensei(){
+  fakeSetpoint = Setpoint;
+}
+
+void regulateOutputsPID(){
+  if(leftOutput > maxTurnVel)
+    leftOutput=maxTurnVel;
+  if(rightOutput > maxTurnVel)
+    rightOutput=maxTurnVel;
+}
+
+void backPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu, int time) {
+  leftPID.SetTunings(rightConsKp-1.2, rightTurnKi, rightTurnKd);
+  rightPID.SetTunings(leftConsKp-1.2, leftTurnKi, leftTurnKd);
   double startTime = millis();
   double endTime = 0;
+//  bool limitDer=false, limitIzq=false;
+  setFakeSetpoint=false;
   readPosition(bno, event, mpu, 'B');
-  filtrateDistances(ultraFront, ultraRight, ultraLeft); 
-  while (endTime - startTime < 1500 || (rightOutput == 0 && leftOutput == 0)) {
+  filtrateDistances(ultraFront, ultraRight, ultraLeft, ultraBack); 
+  while (endTime - startTime < time)/* && (!limit1 || !limit2))*/ {  
     leftPID.Compute();  //Gets an output
     rightPID.Compute();
+    regulateOutputsPID();
+    digitalWrite(motorR1, HIGH);
+    digitalWrite(motorR2, LOW);
+    digitalWrite(motorL1, HIGH);
+    digitalWrite(motorL2, LOW);     
     if(abs(Setpoint)==180){
       if(Setpoint==180){
         if (Input>0) {
-        analogWrite(motorL2, 0);
-        analogWrite(motorR1, velGenDerBack + leftOutput);
-        analogWrite(motorR2, 0);
-        analogWrite(motorL1, velGenIzqBack);//slowGo(endTime - startTime)
+          analogWrite(motorD_PWM, velGenDerBack + leftOutput);
+          analogWrite(motorL_PWM, velGenIzqBack);          
         }
-        else {
-          analogWrite(motorR2, 0);
-          analogWrite(motorL1, velGenIzqBack + leftOutput);//velGenIzq
-          analogWrite(motorR1, velGenDerBack);
-          analogWrite(motorL2, 0);
+        else { 
+          analogWrite(motorD_PWM, velGenDerBack);
+          analogWrite(motorL_PWM, velGenIzqBack + leftOutput);          
         }
       }
       else if(Setpoint==-180){
         if (Input>0) {
-        analogWrite(motorL2, 0);
-        analogWrite(motorR1, velGenDerBack + rightOutput);
-        analogWrite(motorR2, 0);
-        analogWrite(motorL1, velGenIzqBack);//velGenIzq
+          analogWrite(motorD_PWM, velGenDerBack + rightOutput);
+          analogWrite(motorL_PWM, velGenIzqBack);           
         }
         else {
-          analogWrite(motorR2, 0);
-          analogWrite(motorL1, velGenIzqBack + rightOutput);//velGenIzq
-          analogWrite(motorR1, velGenDerBack);
-          analogWrite(motorL2, 0);
+          analogWrite(motorD_PWM, velGenDerBack);
+          analogWrite(motorL_PWM, velGenIzqBack + rightOutput);      
         }
       }
     }
     else{
-    analogWrite(motorR2, 0);
-    analogWrite(motorL2, 0);
-    analogWrite(motorR1, velGenDerBack + leftOutput);
-    analogWrite(motorL1, velGenIzqBack + rightOutput);//velGenIzq
+      analogWrite(motorD_PWM, velGenDerBack + leftOutput);
+      analogWrite(motorL_PWM, velGenIzqBack + rightOutput);      
     }
     ledsPID();
     readPosition(bno, event, mpu, 'B');
-    filtrateDistances(ultraFront, ultraRight, ultraLeft); 
+    filtrateDistances(ultraFront, ultraRight, ultraLeft, ultraBack); 
+//    limitDer = analogRead(limitSwitchDer);
+//    limitIzq = analogRead(limitSwitchIzq);
+//    if(limitDer && limitIzq)
+    setFakeSetpoint=true;
+//    checkColor();
     endTime = millis();
-  } 
+  }  
   leftPID.SetTunings(rightConsKp, rightConsKi, rightConsKd);
   rightPID.SetTunings(leftConsKp, leftConsKi, leftConsKd);
+  stop(false);
 }
 
 void forwardPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu) {
   readPosition(bno, event, mpu, 'B');     
-  filtrateDistances(ultraFront, ultraRight, ultraLeft); 
   leftPID.Compute();  //Gets an output
   rightPID.Compute();
   ledsPID();
-  if(abs(Setpoint)==180){
-    if(Setpoint==180){
-      if (Input>0) {
-      analogWrite(motorL2, velGenIzq + leftOutput);//slowGo()
-      analogWrite(motorR1, 0);
-      analogWrite(motorR2, velGenDer);
-      analogWrite(motorL1, 0);
+  digitalWrite(motorR1, LOW);
+  digitalWrite(motorR2, HIGH);
+  digitalWrite(motorL1, LOW);
+  digitalWrite(motorL2, HIGH); 
+  //Aqui empieza
+  if(abs(Setpoint) == 180){
+//    int tempPID = fakeInput < fakeSetpoint ? leftOutput : rightOutput;
+    if(fakeSetpoint > 0){
+      if(Input > 0 && Input < fakeSetpoint){
+        analogWrite(motorD_PWM, velGenDer);
+        analogWrite(motorL_PWM, velGenIzq + leftOutput + rightOutput); 
+        
       }
-      else {
-        analogWrite(motorR2, velGenDer + leftOutput);
-        analogWrite(motorL1, 0);
-        analogWrite(motorR1, 0);
-        analogWrite(motorL2, velGenIzq);//slowGo()
+      else{
+        analogWrite(motorD_PWM, velGenDer + (leftOutput + rightOutput)*(3.5)/**tempPID*/);
+        analogWrite(motorL_PWM, velGenIzq); 
       }
     }
-    else if(Setpoint==-180){
-      if (Input>0) {
-      analogWrite(motorL2, velGenIzq + rightOutput);//slowGo()
-      analogWrite(motorR1, 0);
-      analogWrite(motorR2, velGenDer);
-      analogWrite(motorL1, 0);
+    else{
+      if(Input < 0 && Input > fakeSetpoint){
+        analogWrite(motorD_PWM, velGenDer + (leftOutput + rightOutput)*(3.5)/**tempPID*/);
+        analogWrite(motorL_PWM, velGenIzq); 
       }
-      else {
-        analogWrite(motorR2, velGenDer + rightOutput);
-        analogWrite(motorL1, 0);
-        analogWrite(motorR1, 0);
-        analogWrite(motorL2, velGenIzq);//slowGo()
+      else{
+        analogWrite(motorD_PWM, velGenDer);
+        analogWrite(motorL_PWM, velGenIzq + leftOutput + rightOutput); 
       }
     }
   }
+//  if(abs(Setpoint)==180){
+//    if(Setpoint==180){
+//      if (Input>0) {
+//        analogWrite(motorD_PWM, velGenDer);
+//        analogWrite(motorL_PWM, velGenIzq + leftOutput);  
+//        digitalWrite(ledGreen, HIGH); digitalWrite(ledRed, LOW);
+//      }
+//      else {
+//        analogWrite(motorD_PWM, velGenDer + leftOutput);
+//        analogWrite(motorL_PWM, velGenIzq);  
+//        digitalWrite(ledRed, HIGH); digitalWrite(ledGreen, LOW);
+//      }
+//    }
+//    else if(Setpoint==-180){
+//      if (Input>0) {
+//        analogWrite(motorD_PWM, velGenDer);
+//        analogWrite(motorL_PWM, velGenIzq + rightOutput); 
+//        digitalWrite(ledGreen, HIGH); digitalWrite(ledRed, LOW);        
+//      }
+//      else {
+//        analogWrite(motorD_PWM, velGenDer + rightOutput);
+//        analogWrite(motorL_PWM, velGenIzq);    
+//        digitalWrite(ledRed, HIGH); digitalWrite(ledGreen, LOW);      
+//      }
+//    }
+//  }
   else{
-  analogWrite(motorR2, velGenDer + rightOutput);
-  analogWrite(motorL2, velGenIzq + leftOutput);//slowGo()
-  analogWrite(motorR1, 0);
-  analogWrite(motorL1, 0);
+    analogWrite(motorD_PWM, velGenDer + rightOutput);
+    analogWrite(motorL_PWM, velGenIzq + leftOutput);  
+    ledsPID();    
   }
+//  checkColor();   
+  filtrateDistances(ultraFront, ultraRight, ultraLeft, ultraBack);   
 }
 
 void spinPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu, int newAngle, bool isDeadEnd){
-  stop(true);
+  if(!LARC)
+    stop(true);
   bool canBack=false;
   lastSetpoint = Setpoint;
   calculateNewSetpoint(newAngle);
   leftPID.SetTunings(rightTurnKp, rightTurnKi, rightTurnKd);
   rightPID.SetTunings(leftTurnKp, leftTurnKi, leftTurnKd);
-  filtrateDistances(ultraFront, ultraRight, ultraLeft); 
+  filtrateDistances(ultraFront, ultraRight, ultraLeft, ultraBack); 
   if(newAngle>0){
     if(ultraLeft.side)   
       canBack=true;
@@ -139,30 +179,35 @@ void spinPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu, int new
     if(ultraRight.side)
       canBack=true;
   }
-  turnPID(bno, event, mpu, 1600);//3000
+  if(LARC)
+    canBack=false;
+  turnPID(bno, event, mpu, 1800);//3000
   if(abs(fakeSetpoint)-abs(Input) > 50){
     leftPID.SetTunings(rightTurnKp, rightAlignKi, rightAlignKd);
     rightPID.SetTunings(leftTurnKp, leftAlignKi, leftAlignKd);
   }
   else if(abs(fakeSetpoint)-abs(Input)<=50 && abs(fakeSetpoint)-abs(Input)>30){
-    leftPID.SetTunings(2.5, rightAlignKi, rightAlignKd);
-    rightPID.SetTunings(2.5, leftAlignKi, leftAlignKd);
+    double middleLeft = (leftTurnKp+leftAlignKp) / 2.0;
+    double middleRight = (rightTurnKp+rightAlignKp) / 2.0;
+    leftPID.SetTunings(middleRight, rightAlignKi, rightAlignKd);
+    rightPID.SetTunings(middleLeft  , leftAlignKi, leftAlignKd);
   }
   else if(abs(fakeSetpoint)-abs(Input) < 30){
     leftPID.SetTunings(rightAlignKp, rightAlignKi, rightAlignKd);
     rightPID.SetTunings(leftAlignKp, leftAlignKi, leftAlignKd);
   }
-  turnPID(bno, event, mpu, 500);//2500
+  turnPID(bno, event, mpu, 900);//2500
   leftPID.SetTunings(rightConsKp, rightConsKi, rightConsKd);
   rightPID.SetTunings(leftConsKp, leftConsKi, leftConsKd);
   if(canBack && !isDeadEnd){
-     backPID(bno, event, mpu);      
+     backPID(bno, event, mpu, 1300);     
      stop(false);
-     setFakeSetpoint();   
-     oneStep(ultraFront, ultraRight, ultraLeft, backStepDistance);
+//     if(setFakeSetpoint)
+        setNewFakeSetpoint();   
+     oneStepMillis(true);
   }
   else
-    oneStep(ultraFront, ultraRight, ultraLeft, stepDistance);
+    oneStepMillis(false);
 }
 
 void turnPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu, double time) {
@@ -170,58 +215,70 @@ void turnPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu, double 
   double endTime = 0;
   double tempOutput;
   readPosition(bno, event, mpu, 'B');
-  filtrateDistances(ultraFront, ultraRight, ultraLeft); 
+  filtrateDistances(ultraFront, ultraRight, ultraLeft, ultraBack); 
   while(endTime - startTime < time) {
-    filtrateDistances(ultraFront, ultraRight, ultraLeft);
     bno.getEvent(&event);
     leftPID.Compute();  //Gets an output
     rightPID.Compute();
+    regulateOutputsPID();
     (leftOutput==0)? tempOutput=rightOutput: tempOutput=leftOutput;
-    turnOnLeds();
-    if(Setpoint==180u){
+    if(Setpoint==180){
       if (Input>0) {
-        analogWrite(motorL2, tempOutput);
-        analogWrite(motorR2, 0);
-        analogWrite(motorR1, tempOutput);
-        analogWrite(motorL1, 0);
+        digitalWrite(motorR1, HIGH);
+        digitalWrite(motorR2, LOW);
+        digitalWrite(motorL1, LOW);
+        digitalWrite(motorL2, HIGH);   
+        analogWrite(motorD_PWM, tempOutput);
+        analogWrite(motorL_PWM, tempOutput);  
       }
       else {
-        analogWrite(motorR2, tempOutput);
-        analogWrite(motorL2, 0);
-        analogWrite(motorR1, 0);
-        analogWrite(motorL1, tempOutput);
+        digitalWrite(motorR1, LOW);
+        digitalWrite(motorR2, HIGH);
+        digitalWrite(motorL1, HIGH);
+        digitalWrite(motorL2, LOW);   
+        analogWrite(motorD_PWM, tempOutput);
+        analogWrite(motorL_PWM, tempOutput);          
       }
     }
-    else if(Setpoint==-180){
+    else if(Setpoint==-180){ //MOVED
       if (Input<0) {
-      analogWrite(motorL2, 0);
-      analogWrite(motorR2, tempOutput);
-      analogWrite(motorR1, 0);
-      analogWrite(motorL1, tempOutput);
+        digitalWrite(motorR1, LOW);
+        digitalWrite(motorR2, HIGH);
+        digitalWrite(motorL1, HIGH);
+        digitalWrite(motorL2, LOW);   
+        analogWrite(motorD_PWM, tempOutput);
+        analogWrite(motorL_PWM, tempOutput);        
       }
       else {
-        analogWrite(motorR2, 0);
-        analogWrite(motorL2, tempOutput);
-        analogWrite(motorR1, tempOutput);
-        analogWrite(motorL1, 0);
+        digitalWrite(motorR1, HIGH);
+        digitalWrite(motorR2, LOW);
+        digitalWrite(motorL1, LOW);
+        digitalWrite(motorL2, HIGH);   
+        analogWrite(motorD_PWM, tempOutput);
+        analogWrite(motorL_PWM, tempOutput);        
       }
     }
     else{
       if (rightOutput == 0) {
-      analogWrite(motorL2, leftOutput);
-      analogWrite(motorR2, 0);
-      analogWrite(motorR1, leftOutput);
-      analogWrite(motorL1, 0);
+        digitalWrite(motorR1, HIGH);
+        digitalWrite(motorR2, LOW);
+        digitalWrite(motorL1, LOW);
+        digitalWrite(motorL2, HIGH);   
+        analogWrite(motorD_PWM, leftOutput);
+        analogWrite(motorL_PWM, leftOutput);         
       }
       else {
-        analogWrite(motorR2, rightOutput);
-        analogWrite(motorL2, 0);
-        analogWrite(motorR1, 0);
-        analogWrite(motorL1, rightOutput);
+        digitalWrite(motorR1, LOW);
+        digitalWrite(motorR2, HIGH);
+        digitalWrite(motorL1, HIGH);
+        digitalWrite(motorL2, LOW);   
+        analogWrite(motorD_PWM, rightOutput);
+        analogWrite(motorL_PWM, rightOutput);            
       }
     }
     ledsPID();
     readPosition(bno, event, mpu, 'B');
+    filtrateDistances(ultraFront, ultraRight, ultraLeft, ultraBack);    
     endTime = millis();
   }
 }

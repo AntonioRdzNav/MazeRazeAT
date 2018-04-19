@@ -1,11 +1,8 @@
 void ledsPID(){
-//  Serial.println(Setpoint);
-//  Serial.println(Input);
-//  Serial.print(leftOutput);
-//  Serial.print("\t\t\t");
-//  Serial.println(rightOutput);
-  (leftOutput > 5)? digitalWrite(ledGreen, HIGH): digitalWrite(ledGreen, LOW); 
-  (rightOutput > 5)? digitalWrite(ledRed, HIGH): digitalWrite(ledRed, LOW);
+  if(abs(Setpoint) != 180){
+    (leftOutput > 5)? digitalWrite(ledGreen, HIGH): digitalWrite(ledGreen, LOW); 
+    (rightOutput > 5)? digitalWrite(ledRed, HIGH): digitalWrite(ledRed, LOW);
+  }
 }
 
 void blinkingLEDS(){
@@ -17,12 +14,35 @@ void blinkingLEDS(){
   }
 }
 
+void turnOnRedLED(){
+  digitalWrite(ledGreen, LOW);
+  digitalWrite(ledRed, HIGH);  
+  digitalWrite(ledBlue, LOW); 
+  delay(3000);
+  turnOffLeds();
+}
+void turnOnGreenLED(){
+  digitalWrite(ledGreen, HIGH);
+  digitalWrite(ledRed, LOW);  
+  digitalWrite(ledBlue, LOW); 
+  delay(3000);
+  turnOffLeds();
+}
+void turnOnBlueLED(){
+  digitalWrite(ledGreen, LOW);
+  digitalWrite(ledRed, LOW);  
+  digitalWrite(ledBlue, HIGH); 
+  delay(3000);
+  turnOffLeds();
+}
 void turnOnLeds(){
   digitalWrite(ledGreen, HIGH);
+  digitalWrite(ledRed, HIGH);  
+  digitalWrite(ledBlue, LOW);
 }
-
-void turnOff(){
+void turnOffLeds(){
   digitalWrite(ledGreen, LOW);
   digitalWrite(ledRed, LOW);
+  digitalWrite(ledBlue, LOW);
 }
 
