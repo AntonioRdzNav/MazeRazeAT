@@ -1,21 +1,3 @@
-//void checkColor(){
-//  int color = currentColor();  
-//  if(color == 0){
-//    turnOnRedLED();
-//    colorRedDetected=true;
-//  }
-//  else if(color == 1){
-//    turnOnBlueLED();
-//  }
-//  else if(color == 2){
-//    turnOnRedLED();
-//    colorGreenDetected=true;
-//  }
-//  else if(color == 3){
-//    colorBlackDetected=true;
-//  }  
-//}
-
 void readColor(double &R, double &G, double &B){
   digitalWrite(S2,LOW);   // Setting RED (R) filtered photodiodes to be read
   digitalWrite(S3,LOW);

@@ -2,17 +2,20 @@
 #include <math.h>
 
 ///////////////////////////////////////////////COLOR///////////////////////////////////////////////////
+// Gregmovil
 //#define S0 41
 //#define S1 42
 //#define S2 37
 //#define S3 40
 //#define sensorOut 36
+//AT
 #define sensorOut 32
 #define S2 30
 #define S3 28
 #define S1 38
 #define S0 36
 #define OE 40
+
 bool colorRedDetected=false, colorGreenDetected=false, colorBlackDetected=false, colorBlueDetected=false;
 double r = 0, g = 0, b = 0;
 const int num_col = 4;
@@ -52,18 +55,6 @@ int lastMillis, actualMillis;
 //#define motorR1 5 
 //#define motorR2 4 //Forward
 //AT
-//#define M2Back 3 //Back
-//#define M2Front 2  //Front
-//#define M2PWM 4  //PWM
-//#define M1Back 5 //Back
-//#define M1Front 6  //Front
-//#define M1PWM 7  //PWM
-//#define motorL_PWM 8  //PWM
-//#define motorD_PWM 9  //PWM
-//#define motorL1 46 //Back
-//#define motorL2 48  //Front
-//#define motorR1 50 //Back
-//#define motorR2 52  //Front
 #define motorL_PWM 7  //PWM
 #define motorD_PWM 4  //PWM
 #define motorL1 5 //Back
@@ -117,6 +108,7 @@ double maxTurnVel=107;
 #define trigFront 29
 #define echoBack 10
 #define trigBack 11
+
 bool special, ultraNegativoSide;
 double stepDistance = 27, backStepDistance = 35;
 bool setFakeSetpoint;
@@ -231,6 +223,7 @@ void setup() {
   pinMode(ledGreen,OUTPUT);
   pinMode(ledRed,OUTPUT);
   pinMode(ledBlue,OUTPUT);    
+  pinMode(echoRight, INPUT);  
   pinMode(trigRight, OUTPUT);
   pinMode(echoLeft, INPUT);
   pinMode(trigLeft, OUTPUT);
@@ -265,7 +258,6 @@ void setup() {
     Serial.println("BNO STARTED");
 //  setCal();
 //  delay(3000);
-//  setFakeSetpoint();
   bno.setExtCrystalUse(true);
 //// PID
   Setpoint=0; //  Set reference point to 0
