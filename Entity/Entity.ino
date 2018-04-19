@@ -13,7 +13,7 @@
 #define S1 38
 #define S0 36
 #define OE 40
-bool colorRedDetected=false, colorGreenDetected=false, colorBlackDetected=false;
+bool colorRedDetected=false, colorGreenDetected=false, colorBlackDetected=false, colorBlueDetected=false;
 double r = 0, g = 0, b = 0;
 const int num_col = 4;
 const int range = 15;
@@ -71,12 +71,13 @@ int lastMillis, actualMillis;
 #define motorR1 2 //Back
 #define motorR2 3  //Front
 
-double velGenDer = 140;
-double velGenIzq = 140-25;
-double velGenDerBack = 100;
-double velGenIzqBack = 100-25;
+double velGenDer = 65;
+double velGenIzq = 65;
+double velGenDerBack = 65;
+double velGenIzqBack = 65;
+double maxTurnVel=107;
 
-/////////////////////////////////////////////ENCODERS///////////////////////////////////////////////
+/////////////////////////////////////////////LIMIT SWITCHES///////////////////////////////////////////////
 #define limitSwitchIzq A9
 #define limitSwitchDer A3
 
@@ -114,13 +115,18 @@ double velGenIzqBack = 100-25;
 #define trigLeft 39
 #define echoFront 31
 #define trigFront 29
+#define echoBack 10
+#define trigBack 11
 bool special, ultraNegativoSide;
-double stepDistance = 25, backStepDistance = 36;
+double stepDistance = 27, backStepDistance = 35;
+bool setFakeSetpoint;
+bool firstBack=true;
 double MAX_DISTANCE = 250;  //Prevents from waiting too long on pulseIn()
 NewPing pingFront(trigFront, echoFront, MAX_DISTANCE);
 NewPing pingRight(trigRight, echoRight, MAX_DISTANCE);
 NewPing pingLeft(trigLeft, echoLeft, MAX_DISTANCE);
-String bits="000000";
+NewPing pingBack(trigBack, echoBack, MAX_DISTANCE);
+bool bits[4] = {false, false, false, false}; //Izq, Adelante, Der, Atras
 
 ///////////////////////////////////////////BNO///////////////////////////////////////////////////
 #include <Wire.h>
@@ -138,14 +144,14 @@ Vector normGyro;
 ///////////////////////////////////////////PID///////////////////////////////////////////////////
 #include <utility/imumaths.h>
 #include <PID_v1.h>
-double leftAlignKp=5.5, leftAlignKi=0, leftAlignKd=0;
-double leftTurnKp=3.4, leftTurnKi=0, leftTurnKd=0;
-double leftConsKp=16, leftConsKi=0, leftConsKd=0;
+double leftAlignKp=4.1, leftAlignKi=0, leftAlignKd=0;
+double leftTurnKp=1.9, leftTurnKi=0, leftTurnKd=0;
+double leftConsKp=5.1, leftConsKi=0, leftConsKd=0;
 double leftGenKp=leftConsKp, leftGenKi=leftConsKi, leftGenKd=leftConsKd;
 double leftError=0;
-double rightAlignKp=5.5, rightAlignKi=0, rightAlignKd=0;
-double rightTurnKp= 3.4, rightTurnKi=0, rightTurnKd=0;
-double rightConsKp=16, rightConsKi=0, rightConsKd=0;
+double rightAlignKp=4.1, rightAlignKi=0, rightAlignKd=0;
+double rightTurnKp= 1.9, rightTurnKi=0, rightTurnKd=0;
+double rightConsKp=5, rightConsKi=0, rightConsKd=0;
 double rightGenKp=rightConsKp, rightGenKi=rightConsKi, rightGenKd=rightConsKd;
 double rightError=0;
 double Offset, Setpoint, fakeSetpoint, leftOutput, rightOutput, Input, rawInput, fakeInput, lastSetpoint;
@@ -190,6 +196,7 @@ struct UltraKalman{
 UltraKalman ultraRight;
 UltraKalman ultraLeft;
 UltraKalman ultraFront;
+UltraKalman ultraBack;
 
 ///////////////////////////////////////////xBNO KALMAN FILTER///////////////////////////////////////////
 float xBNOVarSensor = 10e-6; //Variance of sensor. The LESS, the MORE it looks like the raw input
@@ -229,34 +236,15 @@ void setup() {
   pinMode(trigLeft, OUTPUT);
   pinMode(echoFront, INPUT);
   pinMode(trigFront, OUTPUT);
+  pinMode(echoBack, INPUT);
+  pinMode(trigBack, OUTPUT);
   pinMode(S0, OUTPUT);
   pinMode(S1, OUTPUT);
   pinMode(S2, OUTPUT);
   pinMode(S3, OUTPUT);
   pinMode(sensorOut, INPUT);
-//  AT
-//  pinMode(M1Back,OUTPUT);
-//  pinMode(M1Front,OUTPUT);
-//  pinMode(M1PWM,OUTPUT);
-//  pinMode(M2Back,OUTPUT);
-//  pinMode(M2Front,OUTPUT);
-//  pinMode(M2PWM,OUTPUT);
-//  pinMode(M3Back,OUTPUT);
-//  pinMode(M3Front,OUTPUT);
-//  pinMode(M3PWM,OUTPUT);
-//  pinMode(M4Back,OUTPUT);
-//  pinMode(M4Front,OUTPUT);
-//  pinMode(M4PWM,OUTPUT);
 //  pinMode(limitSwitchDer,INPUT);
-//  pinMode(limitSwitchIzq,INPUT);
-//  pinMode(encoderM1Front,INPUT);
-//  pinMode(encoderM1Back,INPUT);
-//  pinMode(encoderM2Front,INPUT);
-//  pinMode(encoderM2Back,INPUT);
-//  pinMode(encoderM3Front,INPUT);
-//  pinMode(encoderM3Back,INPUT);
-//  pinMode(encoderM4Front,INPUT);
-//  pinMode(encoderM4Back,INPUT);
+//  pinMode(limitSwitchIzq,INPUT);  
   digitalWrite(S0,HIGH);
   digitalWrite(S1,LOW);    
 //// MPU
@@ -295,13 +283,15 @@ void setup() {
 
 void loop(){
 //   forwardPID(bno, event, mpu);
-//   filtrateDistances(ultraFront, ultraRight, ultraLeft);
+//   filtrateDistances(ultraFront, ultraRight, ultraLeft, ultraBack);
 //   if(ultraNegativoSide){
 //       spinPID(bno, event, mpu, 90, false);
-//       filtrateDistances(ultraFront, ultraRight, ultraLeft);      
+//       filtrateDistances(ultraFront, ultraRight, ultraLeft, ultraBack);      
 //   }
 
-  rightPriotity(ultraFront, ultraRight, ultraLeft);
+  calibrarColores(0);
+  while(1)
+    rightPriotity(ultraFront, ultraRight, ultraLeft); 
 
 //  mazeAlgorithm();
 //  writeStringLCD("HOLA", 0, 1);
@@ -309,7 +299,6 @@ void loop(){
 //  filtrateDistances(ultraFront, ultraRight, ultraLeft);
 //  Serial.println(getBitWithValues(bits));
 
-//  readPosition(bno, event, mpu, 'B');
 //  filtrateDistances(ultraFront, ultraRight, ultraLeft);
 //  oneStep(ultraFront, ultraRight, ultraLeft, 35);
 //  spinPID(bno, event, mpu, 90);
@@ -319,12 +308,18 @@ void loop(){
 //digitalWrite(ledGreen, HIGH);
 //  digitalWrite(ledGreen, HIGH);
 
-//  filtrateDistances(ultraFront, ultraRight, ultraLeft);
+//  filtrateDistances(ultraFront, ultraRight, ultraLeft, ultraBack);
 //  Serial.print(ultraLeft.distance);
 //  Serial.print("\t");
 //  Serial.print(ultraFront.distance);
 //  Serial.print("\t");
-//  Serial.println(ultraRight.distance);
+//  Serial.print(ultraRight.distance);
+//  Serial.print("\t");
+//  Serial.println(ultraBack.distance);
+
+//  oneStepMillis(true);
+//  stop(true);
+//  delay(2000);
 
 //  firstChallenge();
 
@@ -342,6 +337,7 @@ void loop(){
 //  ultra_RawKalman(ultraFront, pingFront);
 //  ultra_RawKalman(ultraLeft, pingLeft);
 //  ultra_RawKalman(ultraRight, pingRight);
+//  ultra_RawKalman(ultraBack, pingBack);
 
   //  0        1       2       3    
 //String color_names[num_col] = {"rojo", "azul", "verde", "negro"};

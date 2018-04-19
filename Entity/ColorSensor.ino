@@ -1,20 +1,20 @@
-void checkColor(){
-  int color = currentColor();  
-  if(color == 0){
-    turnOnRedLED();
-    colorRedDetected=true;
-  }
-  else if(color == 1){
-    turnOnBlueLED();
-  }
-  else if(color == 2){
-    turnOnRedLED();
-    colorGreenDetected=true;
-  }
-  else if(color == 3){
-    colorBlackDetected=true;
-  }  
-}
+//void checkColor(){
+//  int color = currentColor();  
+//  if(color == 0){
+//    turnOnRedLED();
+//    colorRedDetected=true;
+//  }
+//  else if(color == 1){
+//    turnOnBlueLED();
+//  }
+//  else if(color == 2){
+//    turnOnRedLED();
+//    colorGreenDetected=true;
+//  }
+//  else if(color == 3){
+//    colorBlackDetected=true;
+//  }  
+//}
 
 void readColor(double &R, double &G, double &B){
   digitalWrite(S2,LOW);   // Setting RED (R) filtered photodiodes to be read
@@ -85,5 +85,54 @@ int currentColor(){
     }
   }
   return posicion;
+}
+
+void colorDecision(){
+  long int temp;
+  switch(currentColor()){
+      case 0:
+        colorRedDetected = true;
+        digitalWrite(ledRed, HIGH);
+        digitalWrite(ledGreen, LOW);
+        digitalWrite(ledBlue, LOW);
+        temp = millis();
+        while(millis() < temp + 2000){
+          stop(false);
+        }        
+      break;
+      case 1:
+        colorBlueDetected = true;
+        digitalWrite(ledRed, LOW);
+        digitalWrite(ledGreen, LOW);
+        digitalWrite(ledBlue, HIGH);
+        temp = millis();
+        while(millis() < temp + 2000){
+          stop(false);
+        }        
+      break;
+      case 2:
+        colorGreenDetected = true;
+        digitalWrite(ledRed, LOW);
+        digitalWrite(ledGreen, HIGH);
+        digitalWrite(ledBlue, LOW);
+        temp = millis();
+        while(millis() < temp + 2000){
+          stop(false);
+        }
+      break;
+      case 3:
+//        colorBlackDetected = true;
+//        if(colorRedDetected && colorGreenDetected){
+//          getOut();
+//        }
+//        else{
+//          saveDoorBits();
+//        }
+      break;
+      default:
+        digitalWrite(ledRed, LOW);
+        digitalWrite(ledGreen, LOW);
+        digitalWrite(ledBlue, LOW);
+  }
 }
 

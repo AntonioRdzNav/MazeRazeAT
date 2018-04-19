@@ -20,7 +20,7 @@ void stop(bool isSpin){
   digitalWrite(motorR2, LOW);
   digitalWrite(motorL1, LOW);
   digitalWrite(motorL2, LOW);
-  delay(100); 
+//  delay(100); 
 }      
 
 void go() {
@@ -28,7 +28,7 @@ void go() {
     digitalWrite(motorR2, HIGH);
     digitalWrite(motorL1, LOW);
     digitalWrite(motorL2, HIGH); 
-    analogWrite(motorD_PWM, 130);
+    analogWrite(motorD_PWM, 100);
     analogWrite(motorL_PWM, 100);
 }
 
