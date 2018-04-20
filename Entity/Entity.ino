@@ -18,8 +18,8 @@
 
 bool colorRedDetected=false, colorGreenDetected=false, colorBlackDetected=false;
 double r = 0, g = 0, b = 0;
-const int num_col = 15;
-const int range = 8;
+const int num_col = 5;
+int range = 15;
 int color_position;           //  0        1       2       3        4
 String color_names[num_col] = {"rojo", "azul", "verde", "negro", "blanco"};
 bool switchColor=false;
@@ -67,7 +67,11 @@ double velGenDer = 65;
 double velGenIzq = 65;
 double velGenDerBack = 65;
 double velGenIzqBack = 65;
-double maxTurnVel=107;
+//AT
+//double timeStepBack=1100, timeStep=920;
+//PISTA LAB
+double timeStepBack=1250, timeStep=1080;
+double maxTurnVel=75;
 
 /////////////////////////////////////////////LIMIT SWITCHES///////////////////////////////////////////////
 #define limitSwitchIzq A9
@@ -119,7 +123,6 @@ NewPing pingFront(trigFront, echoFront, MAX_DISTANCE);
 NewPing pingRight(trigRight, echoRight, MAX_DISTANCE);
 NewPing pingLeft(trigLeft, echoLeft, MAX_DISTANCE);
 NewPing pingBack(trigBack, echoBack, MAX_DISTANCE);
-bool bits[4] = {false, false, false, false}; //Izq, Adelante, Der, Atras
 
 ///////////////////////////////////////////BNO///////////////////////////////////////////////////
 #include <Wire.h>
@@ -251,9 +254,12 @@ void setup() {
 //  mpu.calibrateGyro();
 //  mpu.setThreshold(3);
 //// BNO
-  calibrarColores(0);
-  turnOffLeds();
-  delay(5000);
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//  calibrarColores(0);
+  hardCodedCalibration();
+//  turnOffLeds();
+//  delay(5000);
+//////////////////////////////////////////////////////////////////////////////////////////////////
   if(!bno.begin())  {
     Serial.print("Ooops, no BNO055 detected ... Check your wiring or L2C ADDR!");
     while(1);
@@ -284,9 +290,10 @@ void loop(){
 //       spinPID(bno, event, mpu, 90, false);
 //       filtrateDistances(ultraFront, ultraRight, ultraLeft, ultraBack);      
 //   }
-//  Serial.println(currentColor());
+//  currentColor();
 
   rightPriotity(ultraFront, ultraRight, ultraLeft); 
+//  firstChallenge();
 
 //  mazeAlgorithm();
 //  writeStringLCD("HOLA", 0, 1);
@@ -316,8 +323,6 @@ void loop(){
 //  stop(true);
 //  delay(2000);
 
-//  firstChallenge();
-
 //  calibrarColores(0);
 //  while(1){
 //    readColor(r, g, b);
@@ -337,7 +342,15 @@ void loop(){
   //  0        1       2       3    
 //String color_names[num_col] = {"rojo", "azul", "verde", "negro"};
 
+//for(int i=0; i<num_col; i++){
+//  Serial.print(color_position_arr[i].red);
+//  Serial.print("\t");
+//  Serial.print(color_position_arr[i].blue);
+//  Serial.print("\t");
+//  Serial.println(color_position_arr[i].green);
+//}delay(2000);
 //  calibrarColores(0);
+//  currentColor();
 //  if(currentColor() == 0)
 //    Serial.println("Rojo");
 //  if(currentColor() == 1)

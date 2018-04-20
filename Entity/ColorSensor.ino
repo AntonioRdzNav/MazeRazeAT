@@ -12,6 +12,28 @@ void readColor(double &R, double &G, double &B){
   B = pulseIn(sensorOut, LOW);
 }
 
+void hardCodedCalibration(){
+    color_position_arr[0].red = 32.62;
+    color_position_arr[0].green = 131.42;
+    color_position_arr[0].blue = 93.16;
+
+    color_position_arr[1].red = 129.04;
+    color_position_arr[1].green = 82.69;
+    color_position_arr[1].blue = 38.71;
+
+    color_position_arr[2].red = 138.5;
+    color_position_arr[2].green = 78.34;
+    color_position_arr[2].blue = 96.61;
+
+    color_position_arr[3].red = 193.95;
+    color_position_arr[3].green = 210.07;
+    color_position_arr[3].blue = 158.59;
+    
+    color_position_arr[4].red = 18.95;
+    color_position_arr[4].green = 19.72;
+    color_position_arr[4].blue = 15.51; 
+}
+
 // 0 = AT (red, blue, green, black)
 // 1 = LARC_fistChallenge (blue)
 // 2 = LARC_secondChallenge (red, blue, green)
@@ -32,7 +54,8 @@ void calibrarColores(int challenge){
     int i = colorOptions.peek();
     Serial.println("La calibracion del color " + color_names[i] + " iniciara en 5 segundos.");        
     digitalWrite(ledRed, HIGH);
-    delay(5000);
+//    delay(15000);
+    delay(2000);
     digitalWrite(ledRed, LOW);
     Serial.println("La calibracion del color " + color_names[i] + " ha comenzado.");
     digitalWrite(ledGreen, HIGH);
@@ -56,10 +79,10 @@ void calibrarColores(int challenge){
 int currentColor(){
   readColor(r, g, b);
   int posicion = -1;
-  for(int i = 0; i < num_col; i++){
+  for(int i = 0; i < num_col; i++){    
     if(r <= color_position_arr[i].red + range && r >= color_position_arr[i].red - range){
       if(g <= color_position_arr[i].green + range && g >= color_position_arr[i].green - range){
-        if(b <= color_position_arr[i].blue + range && b >= color_position_arr[i].blue - range){
+        if(b <= color_position_arr[i].blue + range && b >= color_position_arr[i].blue - range){         
           posicion = i;
           return posicion;
         }
