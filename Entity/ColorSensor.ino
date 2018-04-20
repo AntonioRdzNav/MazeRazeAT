@@ -18,7 +18,7 @@ void readColor(double &R, double &G, double &B){
 void calibrarColores(int challenge){
   StackArray <int> colorOptions;
   if(challenge == 0){
-    colorOptions.push(3); colorOptions.push(2); colorOptions.push(1); colorOptions.push(0);
+     colorOptions.push(4); colorOptions.push(3); colorOptions.push(2); colorOptions.push(1); colorOptions.push(0);
   }
   else if(challenge == 1){
     LARC=true; //Will let the robot go back on spinPID()
@@ -65,56 +65,46 @@ int currentColor(){
         }
       }
     }
-  }
+  } 
   return posicion;
 }
 
-void colorDecision(){
-  long int temp;
-  switch(currentColor()){
-      case 0:
-        colorRedDetected = true;
-        digitalWrite(ledRed, HIGH);
-        digitalWrite(ledGreen, LOW);
-        digitalWrite(ledBlue, LOW);
-        temp = millis();
-        while(millis() < temp + 2000){
-          stop(false);
-        }        
-      break;
-      case 1:
-        colorBlueDetected = true;
-        digitalWrite(ledRed, LOW);
-        digitalWrite(ledGreen, LOW);
-        digitalWrite(ledBlue, HIGH);
-        temp = millis();
-        while(millis() < temp + 2000){
-          stop(false);
-        }        
-      break;
-      case 2:
-        colorGreenDetected = true;
-        digitalWrite(ledRed, LOW);
-        digitalWrite(ledGreen, HIGH);
-        digitalWrite(ledBlue, LOW);
-        temp = millis();
-        while(millis() < temp + 2000){
-          stop(false);
-        }
-      break;
-      case 3:
-//        colorBlackDetected = true;
-//        if(colorRedDetected && colorGreenDetected){
-//          getOut();
-//        }
-//        else{
-//          saveDoorBits();
-//        }
-      break;
-      default:
-        digitalWrite(ledRed, LOW);
-        digitalWrite(ledGreen, LOW);
-        digitalWrite(ledBlue, LOW);
+void updateColors(int posicion){
+  if(posicion == 3) colorBlackDetected=true; 
+  else if(posicion == 0) colorRedDetected = true;
+  else if(posicion == 2) colorGreenDetected = true; 
+}
+
+void  showSelectedLed(int color){
+  if(color == 0){
+    digitalWrite(ledRed, HIGH);
+    digitalWrite(ledGreen, LOW);
+    digitalWrite(ledBlue, LOW);  
   }
+  else if(color == 1){
+    digitalWrite(ledRed, LOW);
+    digitalWrite(ledGreen, LOW);
+    digitalWrite(ledBlue, HIGH);  
+  }
+  else if(color == 2){
+    digitalWrite(ledRed, LOW);
+    digitalWrite(ledGreen, HIGH);
+    digitalWrite(ledBlue, LOW);  
+  }
+}
+
+void stopColor(int color){
+  long int temp = millis();  
+  while(millis() < temp + 2000){
+    stop(false);
+    showSelectedLed(color);
+  }   
+  digitalWrite(ledRed, LOW);
+  digitalWrite(ledGreen, LOW);
+  digitalWrite(ledBlue, LOW);  
+}
+
+bool colorDecision(){
+    return (currentColor() != -1); 
 }
 

@@ -14,7 +14,6 @@ void oneStep(UltraKalman ultraFront, UltraKalman &ultraRight, UltraKalman &ultra
         while(ultraBack.distance<distanceCM){
           forwardPID(bno, event, mpu);
           filtrateDistances(ultraFront, ultraRight, ultraLeft, ultraBack);
-          analogWrite(ledBlue, HIGH); // PASO BACK (usando ultraBack)
         } 
       }
       else if(ultraFront.distance < (ultraBack.distance+distanceCM)){
@@ -29,16 +28,15 @@ void oneStep(UltraKalman ultraFront, UltraKalman &ultraRight, UltraKalman &ultra
         while(ultraBack.distance<startDistance+distanceCM){
           forwardPID(bno, event, mpu);
           filtrateDistances(ultraFront, ultraRight, ultraLeft, ultraBack);
-//          analogWrite(ledBlue, HIGH); // PASO NORMAL (usando ultraBack)
         } 
       }
     }
-//    analogWrite(ledBlue, LOW);
 }
 
 void oneStepMillis(bool comeFromBack){
-  analogWrite(ledBlue, HIGH);
   double time;
+  int tempColor;
+  switchColor = false;
   (comeFromBack)? (time = 1000): (time = 880);
   filtrateDistances(ultraFront, ultraRight, ultraLeft, ultraBack);
   double startTime = millis();
@@ -46,38 +44,37 @@ void oneStepMillis(bool comeFromBack){
   while ((endTime - startTime < time) && (ultraFront.distance > 8)){  
     forwardPID(bno, event, mpu);
     endTime = millis();
+    updateColors(currentColor());
+    if(!switchColor){
+      tempColor = currentColor();
+      switchColor = (tempColor!=-1) && (tempColor!=4) && (tempColor!=3);
+    }
+    if(switchColor && currentColor()==4){
+      stopColor(tempColor);
+      time+=2000;
+      switchColor = false; 
+    }
     filtrateDistances(ultraFront, ultraRight, ultraLeft, ultraBack);
-  }  
-  analogWrite(ledBlue, LOW);
+  } 
 }
 
-void saveDoorBits(){
-  filtrateDistances(ultraFront, ultraRight, ultraLeft, ultraBack); 
-  if(abs(Setpoint) == 180){
-    bits[0] = ultraRight.side;
-    bits[1] = false;
-    bits[2] = ultraLeft.side;
-    bits[3] = ultraFront.side;
-  }
-  else if(Setpoint == 90){
-    bits[0] = false;
-    bits[1] = ultraLeft.side;
-    bits[2] = ultraFront.side;
-    bits[3] = ultraRight.side;
-  }
-  else if(Setpoint == -90){
-    bits[0] = ultraFront.side;
-    bits[1] = ultraLeft.side;
-    bits[2] = ultraFront.side;
-    bits[3] = ultraRight.side;
-  }
+void exitRoutine(){
+  if(Setpoint == 0)
+    oneStepMillis(false);
+  else if(Setpoint == 90)
+    spinPID(bno, event, mpu, -90, false);
+  else if(Setpoint == -90)
+    spinPID(bno, event, mpu, 90, false);
 }
 
 void rightPriotity(UltraKalman &ultraFront, UltraKalman &ultraRight, UltraKalman &ultraLeft){ 
-  //Empieza
-    colorDecision();
-  //Termina
   filtrateDistances(ultraFront, ultraRight, ultraLeft, ultraBack);
+  if(colorRedDetected && colorGreenDetected && colorBlackDetected){
+    exitRoutine();  
+    while(1){
+      stop(false);
+    }
+  }
   if((fakeSetpoint*Setpoint)<0 || (abs(fakeSetpoint)-abs(Setpoint))>90)
     edoTensei();
   readPosition(bno, event, mpu, 'B');

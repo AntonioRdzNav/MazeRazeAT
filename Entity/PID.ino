@@ -78,14 +78,14 @@ void backPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu, int tim
       analogWrite(motorD_PWM, velGenDerBack + leftOutput);
       analogWrite(motorL_PWM, velGenIzqBack + rightOutput);      
     }
-    ledsPID();
     readPosition(bno, event, mpu, 'B');
+//    if(colorDecision())
+//      time+=2000;
     filtrateDistances(ultraFront, ultraRight, ultraLeft, ultraBack); 
 //    limitDer = analogRead(limitSwitchDer);
 //    limitIzq = analogRead(limitSwitchIzq);
 //    if(limitDer && limitIzq)
     setFakeSetpoint=true;
-//    checkColor();
     endTime = millis();
   }  
   leftPID.SetTunings(rightConsKp, rightConsKi, rightConsKd);
@@ -97,7 +97,7 @@ void forwardPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu) {
   readPosition(bno, event, mpu, 'B');     
   leftPID.Compute();  //Gets an output
   rightPID.Compute();
-  ledsPID();
+  regulateOutputsPID();
   digitalWrite(motorR1, LOW);
   digitalWrite(motorR2, HIGH);
   digitalWrite(motorL1, LOW);
@@ -127,38 +127,10 @@ void forwardPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu) {
       }
     }
   }
-//  if(abs(Setpoint)==180){
-//    if(Setpoint==180){
-//      if (Input>0) {
-//        analogWrite(motorD_PWM, velGenDer);
-//        analogWrite(motorL_PWM, velGenIzq + leftOutput);  
-//        digitalWrite(ledGreen, HIGH); digitalWrite(ledRed, LOW);
-//      }
-//      else {
-//        analogWrite(motorD_PWM, velGenDer + leftOutput);
-//        analogWrite(motorL_PWM, velGenIzq);  
-//        digitalWrite(ledRed, HIGH); digitalWrite(ledGreen, LOW);
-//      }
-//    }
-//    else if(Setpoint==-180){
-//      if (Input>0) {
-//        analogWrite(motorD_PWM, velGenDer);
-//        analogWrite(motorL_PWM, velGenIzq + rightOutput); 
-//        digitalWrite(ledGreen, HIGH); digitalWrite(ledRed, LOW);        
-//      }
-//      else {
-//        analogWrite(motorD_PWM, velGenDer + rightOutput);
-//        analogWrite(motorL_PWM, velGenIzq);    
-//        digitalWrite(ledRed, HIGH); digitalWrite(ledGreen, LOW);      
-//      }
-//    }
-//  }
   else{
     analogWrite(motorD_PWM, velGenDer + rightOutput);
-    analogWrite(motorL_PWM, velGenIzq + leftOutput);  
-    ledsPID();    
+    analogWrite(motorL_PWM, velGenIzq + leftOutput);     
   }
-//  checkColor();   
   filtrateDistances(ultraFront, ultraRight, ultraLeft, ultraBack);   
 }
 
@@ -276,7 +248,6 @@ void turnPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu, double 
         analogWrite(motorL_PWM, rightOutput);            
       }
     }
-    ledsPID();
     readPosition(bno, event, mpu, 'B');
     filtrateDistances(ultraFront, ultraRight, ultraLeft, ultraBack);    
     endTime = millis();
