@@ -45,12 +45,6 @@ void oneStepMillis(bool comeFromBack){
   while ((endTime - startTime < time) && (ultraFront.distance > 8)){ 
     limitDer = analogRead(limitSwitchDer);
     limitIzq = analogRead(limitSwitchIzq);
-    if(!ultraRight.side){
-    double startTimeLittle = millis();
-    while (millis() < startTimeLittle+400){ 
-      
-    }
-    }
     if(limitDer > 500){
       backPID(bno, event, mpu, 400);
       spinPID(bno, event, mpu, -90, false);
@@ -103,9 +97,16 @@ void rightPriotity(UltraKalman &ultraFront, UltraKalman &ultraRight, UltraKalman
       turnsCounter++;
     }
     else{
-      oneStepMillis(firstBack);
-      firstBack=false;
-      turnsCounter = 0;
+      if(!ultraLeft.side){
+        spinPID(bno, event, mpu, -90, false);  
+        turnsCounter = 0;
+        firstBack=false;
+      }
+      else if(!ultraFront.side){
+        oneStepMillis(firstBack);
+        firstBack=false;
+        turnsCounter = 0;
+      }
     }
   }
   else if (!ultraFront.side){

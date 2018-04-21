@@ -68,7 +68,7 @@ double velGenIzq = 65;
 double velGenDerBack = 65;
 double velGenIzqBack = 65;
 //AT
-double timeStepBack=1080, timeStep=860;
+double timeStepBack=1100, timeStep=920;
 //PISTA LAB
 //double timeStepBack=1250, timeStep=1080;
 double maxTurnVel=75;
@@ -143,12 +143,12 @@ Vector normGyro;
 #include <PID_v1.h>
 double leftAlignKp=4.1, leftAlignKi=0, leftAlignKd=0;
 double leftTurnKp=1.9, leftTurnKi=0, leftTurnKd=0;
-double leftConsKp=5.1, leftConsKi=0, leftConsKd=0;
+double leftConsKp=5, leftConsKi=0, leftConsKd=0;
 double leftGenKp=leftConsKp, leftGenKi=leftConsKi, leftGenKd=leftConsKd;
 double leftError=0;
 double rightAlignKp=4.1, rightAlignKi=0, rightAlignKd=0;
 double rightTurnKp= 1.9, rightTurnKi=0, rightTurnKd=0;
-double rightConsKp=5, rightConsKi=0, rightConsKd=0;
+double rightConsKp=5.1, rightConsKi=0, rightConsKd=0;
 double rightGenKp=rightConsKp, rightGenKi=rightConsKi, rightGenKd=rightConsKd;
 double rightError=0;
 double Offset, Setpoint, fakeSetpoint, leftOutput, rightOutput, Input, rawInput, fakeInput, lastSetpoint;
