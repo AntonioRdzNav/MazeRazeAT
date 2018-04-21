@@ -13,25 +13,25 @@ void readColor(double &R, double &G, double &B){
 }
 
 void hardCodedCalibration(){
-    color_position_arr[0].red = 32.62;
-    color_position_arr[0].green = 131.42;
-    color_position_arr[0].blue = 93.16;
+    color_position_arr[0].red = 42.77;
+    color_position_arr[0].green = 141.82;
+    color_position_arr[0].blue = 108.00;
 
-    color_position_arr[1].red = 129.04;
-    color_position_arr[1].green = 82.69;
-    color_position_arr[1].blue = 38.71;
+    color_position_arr[1].red = 134.00;
+    color_position_arr[1].green = 93.43;
+    color_position_arr[1].blue = 47.57;
 
-    color_position_arr[2].red = 138.5;
-    color_position_arr[2].green = 78.34;
-    color_position_arr[2].blue = 96.61;
+    color_position_arr[2].red = 137.3;
+    color_position_arr[2].green = 89.67;
+    color_position_arr[2].blue = 105.13;
 
-    color_position_arr[3].red = 193.95;
-    color_position_arr[3].green = 210.07;
-    color_position_arr[3].blue = 158.59;
+    color_position_arr[3].red = 210.51;
+    color_position_arr[3].green = 230.42;
+    color_position_arr[3].blue = 178.43;
     
-    color_position_arr[4].red = 18.95;
-    color_position_arr[4].green = 19.72;
-    color_position_arr[4].blue = 15.51; 
+    color_position_arr[4].red = 25.44;
+    color_position_arr[4].green = 27;
+    color_position_arr[4].blue = 21.83; 
 }
 
 // 0 = AT (red, blue, green, black)
@@ -54,8 +54,8 @@ void calibrarColores(int challenge){
     int i = colorOptions.peek();
     Serial.println("La calibracion del color " + color_names[i] + " iniciara en 5 segundos.");        
     digitalWrite(ledRed, HIGH);
-//    delay(15000);
-    delay(2000);
+    delay(15000);
+//    delay(2000);
     digitalWrite(ledRed, LOW);
     Serial.println("La calibracion del color " + color_names[i] + " ha comenzado.");
     digitalWrite(ledGreen, HIGH);
@@ -78,6 +78,11 @@ void calibrarColores(int challenge){
 //int currentColor(double r, double g, double b){
 int currentColor(){
   readColor(r, g, b);
+  Serial.print(r);
+  Serial.print("\t");
+  Serial.print(g);
+  Serial.print("\t");
+  Serial.println(b);
   int posicion = -1;
   for(int i = 0; i < num_col; i++){    
     if(r <= color_position_arr[i].red + range && r >= color_position_arr[i].red - range){

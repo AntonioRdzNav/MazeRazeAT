@@ -35,6 +35,13 @@ void regulateOutputsPID(){
     rightOutput=maxTurnVel;
 }
 
+void regulateOutputsFrontPID(){
+  if(leftOutput > maxFrontVel)
+    leftOutput=maxFrontVel;
+  if(rightOutput > maxFrontVel)
+    rightOutput=maxFrontVel;
+}
+
 void backPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu, int time) {
   leftPID.SetTunings(rightConsKp-1.2, rightTurnKi, rightTurnKd);
   rightPID.SetTunings(leftConsKp-1.2, leftTurnKi, leftTurnKd);
@@ -97,7 +104,7 @@ void forwardPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu) {
   readPosition(bno, event, mpu, 'B');     
   leftPID.Compute();  //Gets an output
   rightPID.Compute();
-  regulateOutputsPID();
+  regulateOutputsFrontPID();
   digitalWrite(motorR1, LOW);
   digitalWrite(motorR2, HIGH);
   digitalWrite(motorL1, LOW);

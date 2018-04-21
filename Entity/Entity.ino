@@ -19,7 +19,7 @@
 bool colorRedDetected=false, colorGreenDetected=false, colorBlackDetected=false;
 double r = 0, g = 0, b = 0;
 const int num_col = 5;
-int range = 15;
+int range = 20;
 int color_position;           //  0        1       2       3        4
 String color_names[num_col] = {"rojo", "azul", "verde", "negro", "blanco"};
 bool switchColor=false;
@@ -68,15 +68,16 @@ double velGenIzq = 65;
 double velGenDerBack = 65;
 double velGenIzqBack = 65;
 //AT
-//double timeStepBack=1100, timeStep=920;
+double timeStepBack=1080, timeStep=860;
 //PISTA LAB
-double timeStepBack=1250, timeStep=1080;
+//double timeStepBack=1250, timeStep=1080;
 double maxTurnVel=75;
+double maxFrontVel=20;
 
 /////////////////////////////////////////////LIMIT SWITCHES///////////////////////////////////////////////
 #define limitSwitchIzq A9
 #define limitSwitchDer A3
-
+int turnsCounter = 0;
 /////////////////////////////////////////////ENCODERS///////////////////////////////////////////////
 //AT
 //#define encoderM1Front 13
@@ -294,6 +295,7 @@ void loop(){
 
   rightPriotity(ultraFront, ultraRight, ultraLeft); 
 //  firstChallenge();
+//currentColor();
 
 //  mazeAlgorithm();
 //  writeStringLCD("HOLA", 0, 1);

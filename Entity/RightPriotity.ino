@@ -45,6 +45,12 @@ void oneStepMillis(bool comeFromBack){
   while ((endTime - startTime < time) && (ultraFront.distance > 8)){ 
     limitDer = analogRead(limitSwitchDer);
     limitIzq = analogRead(limitSwitchIzq);
+    if(!ultraRight.side){
+    double startTimeLittle = millis();
+    while (millis() < startTimeLittle+400){ 
+      
+    }
+    }
     if(limitDer > 500){
       backPID(bno, event, mpu, 400);
       spinPID(bno, event, mpu, -90, false);
@@ -91,18 +97,29 @@ void rightPriotity(UltraKalman &ultraFront, UltraKalman &ultraRight, UltraKalman
   if((fakeSetpoint*Setpoint)<0 || (abs(fakeSetpoint)-abs(Setpoint))>50)
     edoTensei();
   readPosition(bno, event, mpu, 'B');
-  if(!ultraRight.side){ 
-    spinPID(bno, event, mpu, 90, false);
+  if(!ultraRight.side){
+    if(turnsCounter < 4){ 
+      spinPID(bno, event, mpu, 90, false);
+      turnsCounter++;
+    }
+    else{
+      oneStepMillis(firstBack);
+      firstBack=false;
+      turnsCounter = 0;
+    }
   }
   else if (!ultraFront.side){
     oneStepMillis(firstBack);
     firstBack=false;
+    turnsCounter = 0;
   }
   else if(!ultraLeft.side){
     spinPID(bno, event, mpu, -90, false);  
+    turnsCounter = 0;
   }
   else{
     filtrateDistances(ultraFront, ultraRight, ultraLeft, ultraBack);
+    turnsCounter = 0;
     if(ultraRight.distance > ultraLeft.distance)
       spinPID(bno, event, mpu, 180, false);
     else{
