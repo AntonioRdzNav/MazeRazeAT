@@ -18,8 +18,8 @@
 
 bool colorRedDetected=false, colorGreenDetected=false, colorBlackDetected=false;
 double r = 0, g = 0, b = 0;
-const int num_col = 15;
-const int range = 8;
+const int num_col = 5;
+int range = 20;
 int color_position;           //  0        1       2       3        4
 String color_names[num_col] = {"rojo", "azul", "verde", "negro", "blanco"};
 bool switchColor=false;
@@ -67,12 +67,17 @@ double velGenDer = 65;
 double velGenIzq = 65;
 double velGenDerBack = 65;
 double velGenIzqBack = 65;
-double maxTurnVel=107;
+//AT
+double timeStepBack=1100, timeStep=920;
+//PISTA LAB
+//double timeStepBack=1250, timeStep=1080;
+double maxTurnVel=75;
+double maxFrontVel=20;
 
 /////////////////////////////////////////////LIMIT SWITCHES///////////////////////////////////////////////
 #define limitSwitchIzq A9
 #define limitSwitchDer A3
-
+int turnsCounter = 0;
 /////////////////////////////////////////////ENCODERS///////////////////////////////////////////////
 //AT
 //#define encoderM1Front 13
@@ -119,7 +124,6 @@ NewPing pingFront(trigFront, echoFront, MAX_DISTANCE);
 NewPing pingRight(trigRight, echoRight, MAX_DISTANCE);
 NewPing pingLeft(trigLeft, echoLeft, MAX_DISTANCE);
 NewPing pingBack(trigBack, echoBack, MAX_DISTANCE);
-bool bits[4] = {false, false, false, false}; //Izq, Adelante, Der, Atras
 
 ///////////////////////////////////////////BNO///////////////////////////////////////////////////
 #include <Wire.h>
@@ -139,12 +143,12 @@ Vector normGyro;
 #include <PID_v1.h>
 double leftAlignKp=4.1, leftAlignKi=0, leftAlignKd=0;
 double leftTurnKp=1.9, leftTurnKi=0, leftTurnKd=0;
-double leftConsKp=5.1, leftConsKi=0, leftConsKd=0;
+double leftConsKp=5, leftConsKi=0, leftConsKd=0;
 double leftGenKp=leftConsKp, leftGenKi=leftConsKi, leftGenKd=leftConsKd;
 double leftError=0;
 double rightAlignKp=4.1, rightAlignKi=0, rightAlignKd=0;
 double rightTurnKp= 1.9, rightTurnKi=0, rightTurnKd=0;
-double rightConsKp=5, rightConsKi=0, rightConsKd=0;
+double rightConsKp=5.1, rightConsKi=0, rightConsKd=0;
 double rightGenKp=rightConsKp, rightGenKi=rightConsKi, rightGenKd=rightConsKd;
 double rightError=0;
 double Offset, Setpoint, fakeSetpoint, leftOutput, rightOutput, Input, rawInput, fakeInput, lastSetpoint;
@@ -251,9 +255,12 @@ void setup() {
 //  mpu.calibrateGyro();
 //  mpu.setThreshold(3);
 //// BNO
-  calibrarColores(0);
-  turnOffLeds();
-  delay(5000);
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//  calibrarColores(0);
+  hardCodedCalibration();
+//  turnOffLeds();
+//  delay(5000);
+//////////////////////////////////////////////////////////////////////////////////////////////////
   if(!bno.begin())  {
     Serial.print("Ooops, no BNO055 detected ... Check your wiring or L2C ADDR!");
     while(1);
@@ -284,9 +291,11 @@ void loop(){
 //       spinPID(bno, event, mpu, 90, false);
 //       filtrateDistances(ultraFront, ultraRight, ultraLeft, ultraBack);      
 //   }
-//  Serial.println(currentColor());
+//  currentColor();
 
   rightPriotity(ultraFront, ultraRight, ultraLeft); 
+//  firstChallenge();
+//currentColor();
 
 //  mazeAlgorithm();
 //  writeStringLCD("HOLA", 0, 1);
@@ -316,8 +325,6 @@ void loop(){
 //  stop(true);
 //  delay(2000);
 
-//  firstChallenge();
-
 //  calibrarColores(0);
 //  while(1){
 //    readColor(r, g, b);
@@ -337,7 +344,15 @@ void loop(){
   //  0        1       2       3    
 //String color_names[num_col] = {"rojo", "azul", "verde", "negro"};
 
+//for(int i=0; i<num_col; i++){
+//  Serial.print(color_position_arr[i].red);
+//  Serial.print("\t");
+//  Serial.print(color_position_arr[i].blue);
+//  Serial.print("\t");
+//  Serial.println(color_position_arr[i].green);
+//}delay(2000);
 //  calibrarColores(0);
+//  currentColor();
 //  if(currentColor() == 0)
 //    Serial.println("Rojo");
 //  if(currentColor() == 1)

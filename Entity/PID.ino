@@ -35,6 +35,13 @@ void regulateOutputsPID(){
     rightOutput=maxTurnVel;
 }
 
+void regulateOutputsFrontPID(){
+  if(leftOutput > maxFrontVel)
+    leftOutput=maxFrontVel;
+  if(rightOutput > maxFrontVel)
+    rightOutput=maxFrontVel;
+}
+
 void backPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu, int time) {
   leftPID.SetTunings(rightConsKp-1.2, rightTurnKi, rightTurnKd);
   rightPID.SetTunings(leftConsKp-1.2, leftTurnKi, leftTurnKd);
@@ -97,7 +104,7 @@ void forwardPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu) {
   readPosition(bno, event, mpu, 'B');     
   leftPID.Compute();  //Gets an output
   rightPID.Compute();
-  regulateOutputsPID();
+  regulateOutputsFrontPID();
   digitalWrite(motorR1, LOW);
   digitalWrite(motorR2, HIGH);
   digitalWrite(motorL1, LOW);
@@ -153,7 +160,7 @@ void spinPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu, int new
   }
   if(LARC)
     canBack=false;
-  turnPID(bno, event, mpu, 1800);//3000
+  turnPID(bno, event, mpu, 1800);//1600
   if(abs(fakeSetpoint)-abs(Input) > 50){
     leftPID.SetTunings(rightTurnKp, rightAlignKi, rightAlignKd);
     rightPID.SetTunings(leftTurnKp, leftAlignKi, leftAlignKd);
@@ -168,7 +175,7 @@ void spinPID(Adafruit_BNO055 &bno, sensors_event_t &event, MPU6050 &mpu, int new
     leftPID.SetTunings(rightAlignKp, rightAlignKi, rightAlignKd);
     rightPID.SetTunings(leftAlignKp, leftAlignKi, leftAlignKd);
   }
-  turnPID(bno, event, mpu, 900);//2500
+  turnPID(bno, event, mpu, 900);//900
   leftPID.SetTunings(rightConsKp, rightConsKi, rightConsKd);
   rightPID.SetTunings(leftConsKp, leftConsKi, leftConsKd);
   if(canBack && !isDeadEnd){
